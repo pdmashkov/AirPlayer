@@ -1,5 +1,7 @@
 package com.airplayer
 
+import com.airplayer.airplay.NowPlayingInfo
+import com.airplayer.service.PhotoFrame
 import com.airplayer.service.ProtocolState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -111,5 +113,78 @@ class MainActivityTest {
         // Simulate onStop: clear the provider
         provider = { null }
         assertNull(provider.invoke())
+    }
+
+    // ─── Keep-screen-on decision logic ───────────────────────────────────────
+    //
+    // MainActivity.isOverlayActive() decides whether to hold FLAG_KEEP_SCREEN_ON, so Android TV's
+    // screensaver doesn't kick in mid-mirror (see updateOverlay()/setKeepScreenOn()). It must
+    // return true for exactly the states where updateOverlay() shows a full-screen overlay.
+
+    private val samplePin = "1234"
+    private val sampleNowPlaying = NowPlayingInfo(senderName = "Test Sender")
+    private val samplePhotoFrame = PhotoFrame(bytes = byteArrayOf(1, 2, 3), mimeType = "image/jpeg")
+
+    @Test
+    fun `isOverlayActive is false when nothing is showing`() {
+        assertFalse(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = null, airPlayState = ProtocolState.DISABLED, photoFrame = null
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is true while a pairing PIN is shown`() {
+        assertTrue(
+            MainActivity.isOverlayActive(
+                pin = samplePin, nowPlaying = null, airPlayState = ProtocolState.ADVERTISING, photoFrame = null
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is true for audio-only now-playing`() {
+        assertTrue(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = sampleNowPlaying, airPlayState = ProtocolState.ADVERTISING, photoFrame = null
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is true while mirroring is CONNECTED`() {
+        assertTrue(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = null, airPlayState = ProtocolState.CONNECTED, photoFrame = null
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is true while a photo is shown`() {
+        assertTrue(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = null, airPlayState = ProtocolState.ADVERTISING, photoFrame = samplePhotoFrame
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is false when ADVERTISING with no overlay content`() {
+        assertFalse(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = null, airPlayState = ProtocolState.ADVERTISING, photoFrame = null
+            )
+        )
+    }
+
+    @Test
+    fun `isOverlayActive is false when ERROR with no overlay content`() {
+        assertFalse(
+            MainActivity.isOverlayActive(
+                pin = null, nowPlaying = null, airPlayState = ProtocolState.ERROR, photoFrame = null
+            )
+        )
     }
 }
