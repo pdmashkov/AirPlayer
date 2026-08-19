@@ -11,6 +11,7 @@ import android.os.IBinder
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.view.View
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -332,6 +333,21 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val PERMISSION_REQUEST_NOTIFICATIONS = 1001
+
+        /**
+         * True whenever [updateOverlay] would show one of the full-screen overlays instead of
+         * hiding them — i.e. there's something on screen the user is actively watching or using.
+         * Extracted as a pure function, mirroring the same branches as [updateOverlay]'s `when`,
+         * so the screensaver-prevention decision can't silently drift from the overlay-selection
+         * logic, and so it's unit-testable without a live Activity/Window.
+         */
+        fun isOverlayActive(
+            pin: String?,
+            nowPlaying: NowPlayingInfo?,
+            airPlayState: ProtocolState,
+            photoFrame: PhotoFrame?
+        ): Boolean =
+            pin != null || nowPlaying != null || airPlayState == ProtocolState.CONNECTED || photoFrame != null
     }
 
     // ─── Streaming overlay ────────────────────────────────────────────────────
@@ -375,6 +391,7 @@ class MainActivity : AppCompatActivity() {
         val photoFrame = currentPhotoFrame
         val nowPlaying = currentNowPlaying
         val pin = currentPin
+        setKeepScreenOn(isOverlayActive(pin, nowPlaying, currentAirPlayState, photoFrame))
         when {
             // PIN pairing (access control) happens before streaming — show the code over everything.
             pin != null -> showPinScreen(pin)
@@ -384,6 +401,21 @@ class MainActivity : AppCompatActivity() {
             currentAirPlayState == ProtocolState.CONNECTED -> showStreamingScreen()
             photoFrame != null -> showPhotoScreen(photoFrame)
             else -> hideStreamingScreen()
+        }
+    }
+
+    /**
+     * Without this, Android TV's idle timer only sees the receiver's own key/touch input (never)
+     * and starts the system Dream (screensaver) mid-mirror; dismissing it often leaves the
+     * StreamingScreen's Surface torn down, forcing a fresh AirPlay reconnect. Holding
+     * FLAG_KEEP_SCREEN_ON while an overlay is on screen tells the OS this is active playback, the
+     * same mechanism video players use. Cleared once idle so the home screen still sleeps normally.
+     */
+    private fun setKeepScreenOn(keepOn: Boolean) {
+        if (keepOn) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
