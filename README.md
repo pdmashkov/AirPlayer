@@ -1,9 +1,9 @@
 # AirPlayer
 
-AirPlayer is a free, open-source, ad-free AirPlay 2 receiver for Android TV and Fire TV. It lets your macOS or iOS/iPadOS device mirror its screen and audio directly to your TV — no Apple TV required.
+AirPlayer is a free, open-source, ad-free AirPlay 2 receiver for Android TV. It lets your macOS or iOS/iPadOS device mirror its screen and audio directly to your TV — no Apple TV required.
 
 ```
- macOS (Monterey+)            Android TV / Fire TV
+ macOS (Monterey+)            Android TV
  iOS / iPadOS (16+)           ┌──────────────────────┐
  ┌────────────────┐  AirPlay  │                      │
  │  [Your Screen] │ ────────► │  [Your TV Screen]    │
@@ -22,7 +22,7 @@ AirPlayer's AirPlay 2 receiver is fully implemented and available as a signed be
 
 The AirPlay 2 stack is complete end-to-end: mDNS advertising, RTSP handshake, HomeKit-style pairing, FairPlay key decryption, H.264 mirroring, AAC-ELD/AAC-LC/ALAC audio, NTP A/V sync, and DACP reverse remote. Real-device validation with macOS and iOS senders is the current focus.
 
-Miracast and Google Cast receiver stacks are in progress (control-plane implemented; media playback pending).
+AirPlayer is AirPlay 2 only — see [ADR-004](docs/decisions/ADR-004-airplay-only.md) for why Miracast and Google Cast support were removed.
 
 ## Features
 
@@ -40,11 +40,9 @@ Miracast and Google Cast receiver stacks are in progress (control-plane implemen
 - Access-control lockout after repeated failed pairing attempts
 
 ### App & Platform
-- Android TV / Fire TV app shell with foreground service and status UI
+- Android TV app shell with foreground service and status UI
 - Mirror audio toggle and PIN-auth toggle in Settings
-- Works on Google TV (Android 10+) and Fire TV (Android 7+)
-- Miracast Wi-Fi Direct / WFD advertisement and RTSP control-plane
-- Google TV Cast Connect SDK lifecycle (full testing requires Cast app ID)
+- Works on Android TV / Google TV (Android 7.1+)
 - Zero ads, zero analytics, zero internet required
 - Open source — Apache 2.0 license
 
@@ -54,16 +52,16 @@ Miracast and Google Cast receiver stacks are in progress (control-plane implemen
 - **Apple Music in-app audio** — protected on every AirPlay path; use system audio output instead
 - **Buffered audio playback** (AirPlay 2 type 103) — accepted but not played back yet
 - **Cloud/remote streaming** — local network only
-- **Miracast / Cast media playback** — control plane is ready; media decode integration is in progress
+- **Miracast / Google Cast** — not supported; AirPlayer is AirPlay 2 only (see [ADR-004](docs/decisions/ADR-004-airplay-only.md))
 
 ---
 
 ## Requirements
 
 **On your TV:**
-- Google TV (Android 10+) or Amazon Fire TV (Android 7+)
+- Android TV / Google TV (Android 7.1+)
 - Connected to the same Wi-Fi network as your Mac
-- Sideloading enabled (for Fire TV) or ADB enabled (for Google TV)
+- Sideloading or ADB enabled
 
 **On your Mac:**
 - macOS 12 (Monterey) or later
@@ -80,14 +78,7 @@ Miracast and Google Cast receiver stacks are in progress (control-plane implemen
 
 ### Option A: Download a Release APK (easiest)
 
-Go to the [Releases page](https://github.com/mazer666/AirPlayer/releases) and download the APK for your device:
-
-| APK | Device |
-|-----|--------|
-| `AirPlayer-vX.Y.Z-googletv.apk` | Google TV, Android TV (Android 10+) |
-| `AirPlayer-vX.Y.Z-firetv.apk` | Amazon Fire TV (Android 7.1+) |
-
-Then install it via ADB (see the Sideloading Guide below) or a sideloading app like *Downloader* on Fire TV.
+Go to the [Releases page](https://github.com/mazer666/AirPlayer/releases) and download `AirPlayer-vX.Y.Z.apk`, then install it via ADB (see the Sideloading Guide below) or a sideloading app like *Downloader*.
 
 ### Option B: Build from Source
 
@@ -105,41 +96,28 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
 
 3. **Build the APK**
    ```bash
-   # For Google TV:
-   ./gradlew assembleGoogletvDebug
-
-   # Google TV with a registered Cast App ID:
-   ./gradlew assembleGoogletvDebug -Pairplayer.castAppId=<APP_ID>
-
-   # For Fire TV:
-   ./gradlew assembleFiretvDebug
+   ./gradlew assembleDebug
    ```
    The APK will be in `app/build/outputs/apk/`.
 
    To run the same local checks used by CI before testing on a TV:
    ```bash
    ./gradlew :test-runner:test
-   ./gradlew :app:lintGoogletvDebug :app:lintFiretvDebug \
-     :app:assembleGoogletvDebug :app:assembleFiretvDebug
+   ./gradlew :app:lintDebug :app:assembleDebug
    ```
 
 4. **Install via ADB**
    ```bash
    # Enable ADB on your TV first (see below)
    adb connect <TV-IP-ADDRESS>
-
-   # Google TV:
-   adb install app/build/outputs/apk/googletv/debug/app-googletv-debug.apk
-
-   # Fire TV:
-   adb install app/build/outputs/apk/firetv/debug/app-firetv-debug.apk
+   adb install app/build/outputs/apk/debug/app-debug.apk
    ```
 
 ---
 
 ## Sideloading Guide
 
-### Google TV (e.g., Chromecast with Google TV)
+### Android TV / Google TV
 
 1. Go to **Settings → System → About → Android TV OS build** and click it 7 times to enable Developer Options.
 2. Go to **Settings → System → Developer Options** and enable **USB debugging**.
@@ -147,23 +125,9 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
 4. On your Mac/PC, run:
    ```bash
    adb connect <TV-IP>
-   adb install app-googletv-debug.apk
+   adb install app-debug.apk
    ```
 5. Launch AirPlayer from your app list.
-
-### Fire TV (Fire TV Stick, Fire TV Cube, etc.)
-
-1. Go to **Settings → My Fire TV → About** and click **Build** 7 times to enable Developer Options.
-2. Go to **Settings → My Fire TV → Developer Options** and enable:
-   - **ADB debugging** → ON
-   - **Apps from Unknown Sources** → ON
-3. Note your Fire TV's IP address from **Settings → My Fire TV → About → Network**.
-4. On your Mac/PC, run:
-   ```bash
-   adb connect <FireTV-IP>
-   adb install app-firetv-debug.apk
-   ```
-5. Launch AirPlayer from **Apps → Your Apps & Games**.
 
 ---
 
@@ -183,8 +147,6 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
 - **Apple Music in-app audio is not decryptable.** macOS protects it with FairPlay on every AirPlay path. Route the Mac's system audio output instead (works fine).
 - **FairPlay-protected video** (Netflix, Disney+, Apple TV+) cannot be mirrored — this is Apple's DRM, not a AirPlayer limitation.
 - **Buffered audio (AirPlay 2 type 103)** is accepted but not yet played back.
-- **Google Cast** requires a registered Cast app ID for end-to-end testing; see [docs/guides/CAST_APP_ID.md](docs/guides/CAST_APP_ID.md).
-- **Miracast** — Wi-Fi Direct and RTSP control plane work; MPEG-TS media decode is future work.
 - If your router has **AP isolation** or **multicast filtering** enabled, AirPlayer may not appear in the AirPlay menu. Disable these settings on your router.
 - On very busy 2.4 GHz Wi-Fi networks, you may experience latency above 100 ms. Use 5 GHz or Ethernet for best results.
 - **PIN auth is optional.** When disabled (default), any device on the same network can mirror to the TV. Enable PIN auth in Settings if you're on a shared network.

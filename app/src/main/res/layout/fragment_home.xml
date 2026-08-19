@@ -6,11 +6,11 @@
     ┌──────────────────────────────────────────────────────────┐
     │  "Ready for connections"           [●] Service Running   │
     │                                                          │
-    │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
-    │  │  📺 AirPlay │ │  📡 Miracast│ │  🔵 Cast    │       │
-    │  │  ●Running   │ │  ●Running   │ │  ●Running   │       │
-    │  │  Waiting... │ │  Waiting... │ │  Waiting... │       │
-    │  └─────────────┘ └─────────────┘ └─────────────┘       │
+    │  ┌─────────────┐                                        │
+    │  │  📺 AirPlay │                                        │
+    │  │  ●Running   │                                        │
+    │  │  Waiting... │                                        │
+    │  └─────────────┘                                        │
     │                                                          │
     │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
     │  │  ▶ Start │  │  ■ Stop  │  │  ↺ Restart│             │
@@ -113,24 +113,6 @@
             <!-- AirPlay card -->
             <include
                 android:id="@+id/card_airplay"
-                layout="@layout/card_protocol_status"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="12dp" />
-
-            <!-- Miracast card -->
-            <include
-                android:id="@+id/card_miracast"
-                layout="@layout/card_protocol_status"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="12dp" />
-
-            <!-- Cast card -->
-            <include
-                android:id="@+id/card_cast"
                 layout="@layout/card_protocol_status"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

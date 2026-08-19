@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- **Miracast receiver** — dropped entirely (Wi-Fi Direct/WFD advertisement, RTSP control-plane, `miracast/` package)
+- **Google Cast receiver** — dropped entirely (Cast Connect SDK integration, `cast/` package, Cast App ID build config)
+- **Fire TV flavor** — dropped entirely; AirPlayer is now a single universal build (`com.airplayer`, minSdk 25) instead of separate `googletv`/`firetv` product flavors
+- Miracast/Cast settings toggles and HomeScreen status cards
+- `docs/guides/CAST_APP_ID.md` (no longer applicable)
+
+### Changed
+- AirPlayer is now AirPlay 2 only — see [ADR-004](docs/decisions/ADR-004-airplay-only.md) for rationale
+
 ---
 
 ## [1.0.0-beta.1] - 2026-06-14

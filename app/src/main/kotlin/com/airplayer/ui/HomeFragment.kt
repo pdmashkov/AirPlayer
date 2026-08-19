@@ -17,7 +17,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.airplayer.R
 import com.airplayer.service.AirPlayerService
-import com.airplayer.service.Protocol
 import com.airplayer.service.ProtocolState
 import com.airplayer.service.ServiceController
 import com.airplayer.service.ServiceState
@@ -29,9 +28,9 @@ import kotlinx.coroutines.launch
 /**
  * HomeFragment — The main screen of AirPlayer.
  *
- * WHY: Shows the status of all three receiver protocols (AirPlay / Miracast / Cast)
- * and provides Start / Stop / Restart controls. Designed for TV: large cards,
- * D-pad navigable, Google TV Streamer design language.
+ * WHY: Shows the AirPlay receiver's status and provides Start / Stop / Restart
+ * controls. Designed for TV: large cards, D-pad navigable, Google TV Streamer
+ * design language.
  *
  * HOW: Binds to [AirPlayerService] to receive real-time state updates.
  * User interactions call [ServiceController] to send commands to the service.
@@ -64,8 +63,6 @@ class HomeFragment : Fragment() {
     private lateinit var textServiceState: TextView
     private lateinit var dotServiceState: View
     private lateinit var cardAirPlay: View
-    private lateinit var cardMiracast: View
-    private lateinit var cardCast: View
     private lateinit var btnStart: Button
     private lateinit var btnStop: Button
     private lateinit var btnRestart: Button
@@ -103,8 +100,6 @@ class HomeFragment : Fragment() {
         textServiceState = view.findViewById(R.id.text_service_state)
         dotServiceState  = view.findViewById(R.id.dot_service_state)
         cardAirPlay      = view.findViewById(R.id.card_airplay)
-        cardMiracast     = view.findViewById(R.id.card_miracast)
-        cardCast         = view.findViewById(R.id.card_cast)
         btnStart         = view.findViewById(R.id.btn_start)
         btnStop          = view.findViewById(R.id.btn_stop)
         btnRestart       = view.findViewById(R.id.btn_restart)
@@ -115,9 +110,7 @@ class HomeFragment : Fragment() {
      * The dynamic parts (state, detail text) are updated when service state changes.
      */
     private fun configureProtocolCards() {
-        setupCard(cardAirPlay,   R.drawable.ic_airplay,  R.string.protocol_airplay)
-        setupCard(cardMiracast,  R.drawable.ic_miracast, R.string.protocol_miracast)
-        setupCard(cardCast,      R.drawable.ic_cast,     R.string.protocol_cast)
+        setupCard(cardAirPlay, R.drawable.ic_airplay, R.string.protocol_airplay)
     }
 
     private fun setupCard(card: View, iconRes: Int, nameRes: Int) {
@@ -169,12 +162,6 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             svc.airPlayState.collectLatest { state -> updateProtocolCard(cardAirPlay, state) }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            svc.miracastState.collectLatest { state -> updateProtocolCard(cardMiracast, state) }
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            svc.castState.collectLatest { state -> updateProtocolCard(cardCast, state) }
-        }
     }
 
     /**
@@ -195,7 +182,7 @@ class HomeFragment : Fragment() {
     /**
      * Updates a single protocol status card with the current [ProtocolState].
      *
-     * @param card      The card root view (cardAirPlay, cardMiracast, or cardCast).
+     * @param card      The card root view (cardAirPlay).
      * @param state     The current state of this protocol.
      */
     private fun updateProtocolCard(card: View, state: ProtocolState) {

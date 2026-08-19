@@ -3,6 +3,8 @@
 **Date:** 2026-03-23
 **Status:** Accepted
 
+**Superseded by [ADR-004](ADR-004-airplay-only.md).**
+
 ---
 
 ## Context

@@ -47,7 +47,7 @@ When you stop screen sharing, the Mac sends a "goodbye" message (RTSP TEARDOWN) 
 |---|---|---|
 | `AirPlayerApp` | `AirPlayerApp.kt` | App-level init (logging setup) |
 | `MainActivity` | `MainActivity.kt` | Hosts the UI, manages app lifecycle |
-| `AirPlayerService` | `service/AirPlayerService.kt` | ForegroundService — keeps receiver alive |
+| `AirPlayerService` | `service/AirPlayerService.kt` | ForegroundService — keeps the AirPlay receiver alive |
 | `AirPlayReceiver` | `airplay/AirPlayReceiver.kt` | **Orchestrator** — starts/stops all sub-services |
 | `WaitingScreen` | `ui/WaitingScreen.kt` | Idle UI — "Ready for AirPlay" |
 | `StreamingScreen` | `ui/StreamingScreen.kt` | Video SurfaceView (aspect-fit letterbox) |

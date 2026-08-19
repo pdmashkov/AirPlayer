@@ -120,14 +120,9 @@ fun `RECORD triggers onStreamingStarted callback`() {
 - **No blocking calls on Main thread** — use coroutines for all async work
 - **No memory leaks**: all resources (MediaCodec, AudioTrack, sockets) must be released in the appropriate lifecycle method
 
-### RULE 6 — Build Flavors
+### RULE 6 — API Level Guards
 
-Changes that affect platform-specific behavior must be implemented in the appropriate flavor directory:
-- `app/src/main/`: Shared code
-- `app/src/googletv/`: Google TV specific (API 29+ only)
-- `app/src/firetv/`: Fire TV specific (API 25+, no Google APIs)
-
-If you use an API that requires API level 26+, wrap it in a version check:
+AirPlayer ships as a single build (minSdk 25, no product flavors). If you use an API that requires a higher API level, wrap it in a version check:
 ```kotlin
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     // API 26+ code
@@ -166,7 +161,7 @@ Examples:
 ```
 feat: add NTP timing synchronization for A/V sync
 fix: prevent crash when RTSP ANNOUNCE has empty SDP body
-docs: add Fire TV sideloading instructions to README
+docs: add sideloading instructions to README
 test: add unit tests for AES-128-CTR decryption
 ```
 
