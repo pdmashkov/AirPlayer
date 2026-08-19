@@ -16,7 +16,7 @@
 - mDNS (used by AirPlay) requires multicast traffic. Some routers block this.
 - Look for "Enable Multicast", "IGMP Snooping", or "mDNS" options in your router's advanced settings.
 
-**Cause 4: PhairPlay service is stopped**
+**Cause 4: AirPlayer service is stopped**
 - Check the HomeScreen: all service cards should show "Running".
 - If stopped, press the **Start** button or swipe to the control card.
 
@@ -30,12 +30,12 @@
 
 **Cause 1: FairPlay-protected content**
 - Netflix, Disney+, Apple TV+, and other streaming services use FairPlay DRM.
-- Apple blocks mirroring of protected content by design. This is not a PhairPlay limitation.
+- Apple blocks mirroring of protected content by design. This is not a AirPlayer limitation.
 - Solution: use a different app/tab on your Mac.
 
 **Cause 2: MediaCodec decoder unavailable**
 - Rare: some cheap Android TV boxes lack H.264 hardware decode.
-- Check logcat: `adb logcat -s PhairPlay` — look for "MediaCodec" errors.
+- Check logcat: `adb logcat -s AirPlayer` — look for "MediaCodec" errors.
 - Solution: not fixable in software; the TV box needs hardware H.264 support.
 
 ---
@@ -51,7 +51,7 @@
 ## Audio out of sync
 
 1. Try stopping and restarting the stream from your Mac.
-2. Restart the PhairPlay service (HomeScreen → Restart button).
+2. Restart the AirPlayer service (HomeScreen → Restart button).
 3. If persistent, check logcat for NTP timing errors.
 
 ---
@@ -59,7 +59,7 @@
 ## App crashes on startup
 
 1. Check you're using the correct flavor APK for your device.
-2. Try reinstalling: `adb uninstall com.phairplay.googletv` then install again.
+2. Try reinstalling: `adb uninstall com.airplayer.googletv` then install again.
 3. Report the crash: attach `adb logcat -d` output to a GitHub Issue.
 
 ---
@@ -74,8 +74,8 @@ This is by design and cannot be changed.
 
 ## Still stuck?
 
-Open a GitHub Issue at `https://github.com/mazer666/PhairPlay/issues` with:
+Open a GitHub Issue at `https://github.com/mazer666/AirPlayer/issues` with:
 - Your TV model and OS version
 - The protocol you were trying to use
 - A description of what happened
-- `adb logcat -d | grep PhairPlay` output
+- `adb logcat -d | grep AirPlayer` output

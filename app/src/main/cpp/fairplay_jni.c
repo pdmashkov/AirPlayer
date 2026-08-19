@@ -12,7 +12,7 @@
 #define OUTPUT_LEN 16
 
 JNIEXPORT jbyteArray JNICALL
-Java_com_phairplay_airplay_handshake_FairPlay_nativePlayfairDecrypt(
+Java_com_airplayer_airplay_handshake_FairPlay_nativePlayfairDecrypt(
         JNIEnv* env, jobject thiz, jbyteArray keyMessage, jbyteArray cipher) {
     (void) thiz;
     if (keyMessage == NULL || cipher == NULL) {

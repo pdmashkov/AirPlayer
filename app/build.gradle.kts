@@ -1,4 +1,4 @@
-// App module build configuration for PhairPlay.
+// App module build configuration for AirPlayer.
 //
 // Two product flavors are defined from the start:
 //   - "googletv": targets Google TV / Android TV (minSdk 29)
@@ -15,12 +15,12 @@ fun String.escapedForBuildConfig(): String =
     replace("\\", "\\\\").replace("\"", "\\\"")
 
 val castAppId: String =
-    (providers.gradleProperty("phairplay.castAppId").orNull
-        ?: providers.environmentVariable("PHAIRPLAY_CAST_APP_ID").orNull
+    (providers.gradleProperty("airplayer.castAppId").orNull
+        ?: providers.environmentVariable("AIRPLAYER_CAST_APP_ID").orNull
         ?: "").trim()
 
 android {
-    namespace = "com.phairplay"
+    namespace = "com.airplayer"
     compileSdk = 35
     ndkVersion = "28.2.13676358"
 
@@ -34,7 +34,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "CAST_APP_ID", "\"${castAppId.escapedForBuildConfig()}\"")
 
-        // Native FairPlay (libplayfair.so) — build for all Android ABIs so PhairPlay runs on
+        // Native FairPlay (libplayfair.so) — build for all Android ABIs so AirPlayer runs on
         // the full range of Android TV / Fire TV hardware (32- and 64-bit ARM, plus x86/x86_64
         // for Intel devices, ChromeOS, and emulators). Required for Google Play 64-bit compliance.
         ndk {
@@ -56,13 +56,13 @@ android {
     productFlavors {
         create("googletv") {
             dimension = "platform"
-            applicationId = "com.phairplay.googletv"
+            applicationId = "com.airplayer.googletv"
             minSdk = 29        // Google TV requires Android 10+
             versionNameSuffix = "-googletv"
         }
         create("firetv") {
             dimension = "platform"
-            applicationId = "com.phairplay.firetv"
+            applicationId = "com.airplayer.firetv"
             minSdk = 25        // Fire TV supports Android 7.1+
             versionNameSuffix = "-firetv"
         }
@@ -138,7 +138,7 @@ android {
         abortOnError = true
         checkReleaseBuilds = true
         warningsAsErrors = true
-        // Keep lint focused on PhairPlay sources. The Google Cast SDK pulls a
+        // Keep lint focused on AirPlayer sources. The Google Cast SDK pulls a
         // large transitive graph that exceeds the small CI/dev VM during
         // dependency lint analysis, while app-source lint still catches local
         // manifest/resource/API regressions.
@@ -183,7 +183,7 @@ android {
 
     buildFeatures {
         // BuildConfig is disabled by default in AGP 8.x — enable it explicitly
-        // because PhairPlayApp.kt and SettingsFragment.kt use BuildConfig.VERSION_NAME etc.
+        // because AirPlayerApp.kt and SettingsFragment.kt use BuildConfig.VERSION_NAME etc.
         buildConfig = true
     }
 

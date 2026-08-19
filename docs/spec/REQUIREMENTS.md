@@ -1,4 +1,4 @@
-# PhairPlay – Requirements
+# AirPlayer – Requirements
 
 Version: 2.2
 Status: Active
@@ -198,11 +198,11 @@ Date: 2026-03-23
 3. Implement the FPS key exchange protocol: the receiver must communicate with a license server using Apple's proprietary key exchange, using the provided KSM library (binary-only, Apple-supplied).
 4. The KSM binary is platform-specific — Apple provides it for macOS/iOS/tvOS. An Android implementation would require Apple to supply an Android-compatible KSM, which Apple has never done publicly.
 
-**Conclusion for PhairPlay v1:**
+**Conclusion for AirPlayer v1:**
 - FairPlay is **not implementable** on Android without Apple providing an Android KSM binary — which they have not done.
 - Even if Apple provided one, the license terms would likely be **incompatible with open-source distribution** under Apache 2.0.
-- **FairPlay is excluded from PhairPlay v1 and is not on the roadmap** unless Apple changes their licensing policy.
-- PhairPlay can receive unencrypted AirPlay streams and AirPlay streams encrypted with the open AES-128-CTR session key mechanism. FairPlay-protected premium content (e.g., Apple TV+) will not play.
+- **FairPlay is excluded from AirPlayer v1 and is not on the roadmap** unless Apple changes their licensing policy.
+- AirPlayer can receive unencrypted AirPlay streams and AirPlay streams encrypted with the open AES-128-CTR session key mechanism. FairPlay-protected premium content (e.g., Apple TV+) will not play.
 
 > **Note on open codecs:** H.265 HEVC, VP9, and AV1 are fully implementable on Android via `MediaCodec` with hardware support checks. These are planned as optional features in v2 behind `MediaCodecInfo.CodecCapabilities` capability queries at runtime.
 

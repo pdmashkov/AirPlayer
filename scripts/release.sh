@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PhairPlay local release script
+# AirPlayer local release script
 #
 # Builds signed release APKs for GoogleTV and FireTV locally, then publishes
 # a GitHub Release with both APKs attached.
@@ -10,14 +10,14 @@
 # First-time setup — run once to create your release keystore:
 #   ./scripts/release.sh --setup
 #
-# Credentials are stored in ~/.config/phairplay/release.env (outside the repo).
+# Credentials are stored in ~/.config/airplayer/release.env (outside the repo).
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-CREDS_FILE="${HOME}/.config/phairplay/release.env"
-KEYSTORE_FILE="${HOME}/.config/phairplay/phairplay-release.jks"
+CREDS_FILE="${HOME}/.config/airplayer/release.env"
+KEYSTORE_FILE="${HOME}/.config/airplayer/airplayer-release.jks"
 
 # ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ require_cmd() {
 # ── first-time keystore setup ────────────────────────────────────────────────
 
 cmd_setup() {
-    bold "=== PhairPlay release keystore setup ==="
+    bold "=== AirPlayer release keystore setup ==="
     echo ""
 
     if [[ -f "$KEYSTORE_FILE" ]]; then
@@ -48,7 +48,7 @@ cmd_setup() {
     echo "Remember the passwords — they will be saved to $CREDS_FILE"
     echo ""
 
-    read -rp "Key alias (e.g. phairplay): " KEY_ALIAS
+    read -rp "Key alias (e.g. airplayer): " KEY_ALIAS
     read -rsp "Keystore password: " KEYSTORE_PASSWORD; echo
     read -rsp "Key password (Enter = same as keystore): " KEY_PASSWORD; echo
     [[ -z "$KEY_PASSWORD" ]] && KEY_PASSWORD="$KEYSTORE_PASSWORD"
@@ -59,7 +59,7 @@ cmd_setup() {
         -keyalg RSA -keysize 2048 -validity 10000 \
         -storepass "$KEYSTORE_PASSWORD" \
         -keypass "$KEY_PASSWORD" \
-        -dname "CN=PhairPlay, O=PhairPlay, C=DE"
+        -dname "CN=AirPlayer, O=AirPlayer, C=DE"
 
     mkdir -p "$(dirname "$CREDS_FILE")"
     chmod 700 "$(dirname "$CREDS_FILE")"
@@ -126,7 +126,7 @@ cmd_release() {
     # Check gh auth
     gh auth status >/dev/null 2>&1 || die "Not logged in to GitHub. Run: gh auth login"
 
-    bold "=== Building PhairPlay $VERSION ==="
+    bold "=== Building AirPlayer $VERSION ==="
     echo ""
 
     # Build both flavors
@@ -147,8 +147,8 @@ cmd_release() {
     # Locate and rename APKs
     GOOGLETV_SRC="app/build/outputs/apk/googletv/release/app-googletv-release.apk"
     FIRETV_SRC="app/build/outputs/apk/firetv/release/app-firetv-release.apk"
-    GOOGLETV_APK="PhairPlay-${VERSION}-googletv.apk"
-    FIRETV_APK="PhairPlay-${VERSION}-firetv.apk"
+    GOOGLETV_APK="AirPlayer-${VERSION}-googletv.apk"
+    FIRETV_APK="AirPlayer-${VERSION}-firetv.apk"
 
     [[ -f "$GOOGLETV_SRC" ]] || die "GoogleTV APK not found at $GOOGLETV_SRC"
     [[ -f "$FIRETV_SRC"   ]] || die "FireTV APK not found at $FIRETV_SRC"
@@ -198,7 +198,7 @@ Use [adb](https://developer.android.com/tools/adb) or a sideloading app like *Do
 
     echo "▸ Publishing GitHub Release $VERSION..."
     gh release create "$VERSION" \
-        --title "PhairPlay $VERSION" \
+        --title "AirPlayer $VERSION" \
         --notes "$RELEASE_NOTES" \
         $PRERELEASE_FLAG \
         "$GOOGLETV_APK" \

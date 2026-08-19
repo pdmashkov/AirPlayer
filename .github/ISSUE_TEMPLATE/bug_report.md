@@ -30,7 +30,7 @@ assignees: ''
 - Device model: (e.g., Chromecast with Google TV 4K)
 - Platform: [ ] Google TV  [ ] Fire TV
 - Android/Fire OS version: (e.g., Android 12 / Fire OS 7.3.2)
-- PhairPlay version: (e.g., 1.0.0)
+- AirPlayer version: (e.g., 1.0.0)
 
 **Mac (AirPlay sender):**
 - macOS version: (e.g., macOS 14.4 Sonoma)
@@ -43,8 +43,8 @@ assignees: ''
 
 <!--
 If you can reproduce the bug, please attach the Android logcat output.
-Filter by "PhairPlay" to get relevant logs:
-  adb logcat -s PhairPlay:* | head -100
+Filter by "AirPlayer" to get relevant logs:
+  adb logcat -s AirPlayer:* | head -100
 -->
 
 ```

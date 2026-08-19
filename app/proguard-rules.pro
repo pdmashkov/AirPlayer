@@ -1,4 +1,4 @@
-# ProGuard rules for PhairPlay release builds.
+# ProGuard rules for AirPlayer release builds.
 # Keep rules prevent ProGuard from removing or renaming code that is used
 # via reflection or that must retain its original name for the AirPlay protocol.
 
@@ -14,7 +14,7 @@
 -dontwarn kotlinx.coroutines.**
 
 # Keep our main application classes
--keep class com.phairplay.** { *; }
+-keep class com.airplayer.** { *; }
 
 # General Android rules
 -keepattributes *Annotation*

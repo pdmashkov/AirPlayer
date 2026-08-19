@@ -6,7 +6,7 @@
         - Accent blue for focus and active states
         - Leanback parent for D-pad / TV launcher compatibility
     -->
-    <style name="Theme.PhairPlay" parent="@style/Theme.AppCompat.Leanback">
+    <style name="Theme.AirPlayer" parent="@style/Theme.AppCompat.Leanback">
         <item name="android:windowBackground">@color/background_dark</item>
         <item name="android:colorPrimary">@color/accent_blue</item>
         <item name="android:colorPrimaryDark">@color/background_dark</item>
@@ -18,7 +18,7 @@
     </style>
 
     <!-- Fullscreen theme: hides status bar for StreamingScreen -->
-    <style name="Theme.PhairPlay.Fullscreen" parent="Theme.PhairPlay">
+    <style name="Theme.AirPlayer.Fullscreen" parent="Theme.AirPlayer">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>

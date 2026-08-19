@@ -1,6 +1,6 @@
-# PhairPlay
+# AirPlayer
 
-PhairPlay is a free, open-source, ad-free AirPlay 2 receiver for Android TV and Fire TV. It lets your macOS or iOS/iPadOS device mirror its screen and audio directly to your TV — no Apple TV required.
+AirPlayer is a free, open-source, ad-free AirPlay 2 receiver for Android TV and Fire TV. It lets your macOS or iOS/iPadOS device mirror its screen and audio directly to your TV — no Apple TV required.
 
 ```
  macOS (Monterey+)            Android TV / Fire TV
@@ -9,7 +9,7 @@ PhairPlay is a free, open-source, ad-free AirPlay 2 receiver for Android TV and 
  │  [Your Screen] │ ────────► │  [Your TV Screen]    │
  │                │           │                      │
  └────────────────┘           └──────────────────────┘
-      Click AirPlay →              PhairPlay
+      Click AirPlay →              AirPlayer
       Select your TV →             (this app)
       Done. ✓
 ```
@@ -18,7 +18,7 @@ PhairPlay is a free, open-source, ad-free AirPlay 2 receiver for Android TV and 
 
 ## Current Status — v1.0.0-beta.1
 
-PhairPlay's AirPlay 2 receiver is fully implemented and available as a signed beta release. Download the APK directly from the [GitHub Releases page](https://github.com/mazer666/PhairPlay/releases).
+AirPlayer's AirPlay 2 receiver is fully implemented and available as a signed beta release. Download the APK directly from the [GitHub Releases page](https://github.com/mazer666/AirPlayer/releases).
 
 The AirPlay 2 stack is complete end-to-end: mDNS advertising, RTSP handshake, HomeKit-style pairing, FairPlay key decryption, H.264 mirroring, AAC-ELD/AAC-LC/ALAC audio, NTP A/V sync, and DACP reverse remote. Real-device validation with macOS and iOS senders is the current focus.
 
@@ -48,7 +48,7 @@ Miracast and Google Cast receiver stacks are in progress (control-plane implemen
 - Zero ads, zero analytics, zero internet required
 - Open source — Apache 2.0 license
 
-## What PhairPlay Does NOT Do
+## What AirPlayer Does NOT Do
 
 - **FairPlay DRM content** (Netflix, Disney+, Apple TV+) — Apple DRM; not decryptable by any open-source receiver
 - **Apple Music in-app audio** — protected on every AirPlay path; use system audio output instead
@@ -80,12 +80,12 @@ Miracast and Google Cast receiver stacks are in progress (control-plane implemen
 
 ### Option A: Download a Release APK (easiest)
 
-Go to the [Releases page](https://github.com/mazer666/PhairPlay/releases) and download the APK for your device:
+Go to the [Releases page](https://github.com/mazer666/AirPlayer/releases) and download the APK for your device:
 
 | APK | Device |
 |-----|--------|
-| `PhairPlay-vX.Y.Z-googletv.apk` | Google TV, Android TV (Android 10+) |
-| `PhairPlay-vX.Y.Z-firetv.apk` | Amazon Fire TV (Android 7.1+) |
+| `AirPlayer-vX.Y.Z-googletv.apk` | Google TV, Android TV (Android 10+) |
+| `AirPlayer-vX.Y.Z-firetv.apk` | Amazon Fire TV (Android 7.1+) |
 
 Then install it via ADB (see the Sideloading Guide below) or a sideloading app like *Downloader* on Fire TV.
 
@@ -99,8 +99,8 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
 
 2. **Clone the repository**
    ```bash
-   git clone https://github.com/mazer666/PhairPlay.git
-   cd PhairPlay
+   git clone https://github.com/mazer666/AirPlayer.git
+   cd AirPlayer
    ```
 
 3. **Build the APK**
@@ -109,7 +109,7 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
    ./gradlew assembleGoogletvDebug
 
    # Google TV with a registered Cast App ID:
-   ./gradlew assembleGoogletvDebug -Pphairplay.castAppId=<APP_ID>
+   ./gradlew assembleGoogletvDebug -Pairplayer.castAppId=<APP_ID>
 
    # For Fire TV:
    ./gradlew assembleFiretvDebug
@@ -149,7 +149,7 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
    adb connect <TV-IP>
    adb install app-googletv-debug.apk
    ```
-5. Launch PhairPlay from your app list.
+5. Launch AirPlayer from your app list.
 
 ### Fire TV (Fire TV Stick, Fire TV Cube, etc.)
 
@@ -163,17 +163,17 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
    adb connect <FireTV-IP>
    adb install app-firetv-debug.apk
    ```
-5. Launch PhairPlay from **Apps → Your Apps & Games**.
+5. Launch AirPlayer from **Apps → Your Apps & Games**.
 
 ---
 
 ## How to Use
 
-1. Launch PhairPlay on your TV. You will see the Waiting Screen with your TV's name.
+1. Launch AirPlayer on your TV. You will see the Waiting Screen with your TV's name.
 2. On your Mac, click the **AirPlay** icon in the menu bar (or go to **System Preferences → Displays → AirPlay Display**).
 3. Select your TV from the list (it should appear as your TV's name).
 4. Your Mac's screen will appear on the TV instantly.
-5. To stop: click the AirPlay icon on your Mac and select "Turn Off AirPlay Mirroring", or just quit PhairPlay on the TV.
+5. To stop: click the AirPlay icon on your Mac and select "Turn Off AirPlay Mirroring", or just quit AirPlayer on the TV.
 
 ---
 
@@ -181,15 +181,15 @@ Then install it via ADB (see the Sideloading Guide below) or a sideloading app l
 
 - **Beta software** — the AirPlay 2 stack is complete but real-device validation with various macOS/iOS senders is ongoing. Please report issues.
 - **Apple Music in-app audio is not decryptable.** macOS protects it with FairPlay on every AirPlay path. Route the Mac's system audio output instead (works fine).
-- **FairPlay-protected video** (Netflix, Disney+, Apple TV+) cannot be mirrored — this is Apple's DRM, not a PhairPlay limitation.
+- **FairPlay-protected video** (Netflix, Disney+, Apple TV+) cannot be mirrored — this is Apple's DRM, not a AirPlayer limitation.
 - **Buffered audio (AirPlay 2 type 103)** is accepted but not yet played back.
 - **Google Cast** requires a registered Cast app ID for end-to-end testing; see [docs/guides/CAST_APP_ID.md](docs/guides/CAST_APP_ID.md).
 - **Miracast** — Wi-Fi Direct and RTSP control plane work; MPEG-TS media decode is future work.
-- If your router has **AP isolation** or **multicast filtering** enabled, PhairPlay may not appear in the AirPlay menu. Disable these settings on your router.
+- If your router has **AP isolation** or **multicast filtering** enabled, AirPlayer may not appear in the AirPlay menu. Disable these settings on your router.
 - On very busy 2.4 GHz Wi-Fi networks, you may experience latency above 100 ms. Use 5 GHz or Ethernet for best results.
 - **PIN auth is optional.** When disabled (default), any device on the same network can mirror to the TV. Enable PIN auth in Settings if you're on a shared network.
 
-For real-device failures, run `tools/collect-device-logs.sh` before restarting the app. It captures package state, memory, CPU, and filtered PhairPlay logs into `device-test-logs/`.
+For real-device failures, run `tools/collect-device-logs.sh` before restarting the app. It captures package state, memory, CPU, and filtered AirPlayer logs into `device-test-logs/`.
 
 ---
 

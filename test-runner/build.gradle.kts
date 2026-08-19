@@ -1,5 +1,5 @@
 /**
- * PhairPlay JVM Test Runner
+ * AirPlayer JVM Test Runner
  *
  * Standalone Gradle project that runs all JVM unit tests WITHOUT the Android
  * Gradle Plugin (AGP). This is necessary in environments where maven.google.com
@@ -38,9 +38,9 @@ sourceSets {
             exclude(
                 "**/ui/**",
                 "**/MainActivity.kt",
-                "**/PhairPlayApp.kt",
+                "**/AirPlayerApp.kt",
                 "**/settings/SettingsRepository.kt",
-                "**/service/PhairPlayService.kt",
+                "**/service/AirPlayerService.kt",
                 "**/service/BootReceiver.kt",
                 "**/MainActivityTest.kt",
                 // MdnsServiceTest mocks NsdManager whose static initializer calls

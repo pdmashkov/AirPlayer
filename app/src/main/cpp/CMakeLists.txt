@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(phairplay C CXX)
+project(airplayer C CXX)
 
 # RPiPlay's FairPlay (playfair) implementation + a thin JNI bridge → libplayfair.so.
 add_library(playfair SHARED
