@@ -15,8 +15,6 @@ import com.airplayer.MainActivity
 import com.airplayer.R
 import android.view.Surface
 import com.airplayer.airplay.AirPlayReceiver
-import com.airplayer.cast.CastReceiver
-import com.airplayer.miracast.MiracastReceiver
 import com.airplayer.settings.AppSettings
 import com.airplayer.settings.SettingsRepository
 import com.airplayer.util.Logger
@@ -31,9 +29,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * AirPlayerService — Android ForegroundService that hosts all receiver protocols.
+ * AirPlayerService — Android ForegroundService that hosts the AirPlay receiver.
  *
- * WHY: The AirPlay/Miracast/Cast receivers need to run continuously in the background.
+ * WHY: The AirPlay receiver needs to run continuously in the background.
  * Android may kill background processes. A ForegroundService with a persistent
  * notification keeps the app alive and shows the user that AirPlayer is active.
  *
@@ -65,12 +63,6 @@ class AirPlayerService : Service() {
     private val _airPlayState = MutableStateFlow(ProtocolState.DISABLED)
     val airPlayState: StateFlow<ProtocolState> = _airPlayState.asStateFlow()
 
-    private val _miracastState = MutableStateFlow(ProtocolState.DISABLED)
-    val miracastState: StateFlow<ProtocolState> = _miracastState.asStateFlow()
-
-    private val _castState = MutableStateFlow(ProtocolState.DISABLED)
-    val castState: StateFlow<ProtocolState> = _castState.asStateFlow()
-
     private val _activeConnection = MutableStateFlow<ActiveConnection?>(null)
     val activeConnection: StateFlow<ActiveConnection?> = _activeConnection.asStateFlow()
 
@@ -90,10 +82,8 @@ class AirPlayerService : Service() {
     // setVideoSurfaceProvider() is called after startAirPlay().
     @Volatile private var videoSurfaceProvider: (() -> Surface?)? = null
 
-    // Receiver instances — null when not running
+    // Receiver instance — null when not running
     private var airPlayReceiver: AirPlayReceiver? = null
-    private var miracastReceiver: MiracastReceiver? = null
-    private var castReceiver: CastReceiver? = null
 
     // Settings — read once when starting, re-read on restart
     private lateinit var settingsRepository: SettingsRepository
@@ -171,21 +161,16 @@ class AirPlayerService : Service() {
     // ─── Service Control ─────────────────────────────────────────────────────
 
     /**
-     * Starts all receivers that are enabled in Settings.
-     *
-     * Reads current settings, then starts AirPlay, Miracast, and/or Cast
-     * receivers according to the enabled flags.
+     * Starts the AirPlay receiver if it's enabled in Settings.
      */
     private suspend fun startReceivers() {
         val settings = settingsRepository.settingsFlow.first()
-        Logger.i("Starting receivers: AirPlay=${settings.airPlayEnabled}, Miracast=${settings.miracastEnabled}, Cast=${settings.castEnabled}")
+        Logger.i("Starting receivers: AirPlay=${settings.airPlayEnabled}")
 
         _serviceState.value = ServiceState.Running
         updateNotification(isRunning = true)
 
-        if (settings.airPlayEnabled)   startAirPlay(settings)
-        if (settings.miracastEnabled)  startMiracast()
-        if (settings.castEnabled)      startCast()
+        if (settings.airPlayEnabled) startAirPlay(settings)
     }
 
     /**
@@ -295,34 +280,10 @@ class AirPlayerService : Service() {
         Logger.d("AirPlay receiver started (displayName='${settings.effectiveDisplayName}')")
     }
 
-    private fun startMiracast() {
-        _miracastState.value = ProtocolState.ADVERTISING
-        miracastReceiver = MiracastReceiver(
-            context = applicationContext,
-            onStateChanged = { state -> _miracastState.value = state }
-        ).also { it.start() }
-        Logger.d("Miracast receiver started")
-    }
-
-    private fun startCast() {
-        _castState.value = ProtocolState.ADVERTISING
-        castReceiver = CastReceiver(
-            context = applicationContext,
-            onStateChanged = { state -> _castState.value = state }
-        ).also { it.start() }
-        Logger.d("Cast receiver started")
-    }
-
     private fun stopAllReceiversInternal() {
         try { airPlayReceiver?.stop() } catch (e: Exception) { Logger.e("AirPlay stop error", e) }
-        try { miracastReceiver?.stop() } catch (e: Exception) { Logger.e("Miracast stop error", e) }
-        try { castReceiver?.stop() } catch (e: Exception) { Logger.e("Cast stop error", e) }
         airPlayReceiver = null
-        miracastReceiver = null
-        castReceiver = null
         _airPlayState.value = ProtocolState.DISABLED
-        _miracastState.value = ProtocolState.DISABLED
-        _castState.value = ProtocolState.DISABLED
         _photoFrame.value = null
         _nowPlaying.value = null
         _pairingPin.value = null

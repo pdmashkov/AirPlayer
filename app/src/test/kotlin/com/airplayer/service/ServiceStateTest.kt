@@ -93,16 +93,6 @@ class ServiceStateTest {
         assertEquals(Protocol.AIRPLAY, Protocol.valueOf("AIRPLAY"))
     }
 
-    @Test
-    fun `Protocol has MIRACAST value`() {
-        assertEquals(Protocol.MIRACAST, Protocol.valueOf("MIRACAST"))
-    }
-
-    @Test
-    fun `Protocol has CAST value`() {
-        assertEquals(Protocol.CAST, Protocol.valueOf("CAST"))
-    }
-
     // ─── ActiveConnection data class ──────────────────────────────────────────
 
     @Test

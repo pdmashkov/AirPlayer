@@ -12,13 +12,7 @@ if ! command -v adb >/dev/null 2>&1; then
 fi
 
 if [[ -z "$PACKAGE" ]]; then
-  if adb shell pm path com.airplayer.googletv >/dev/null 2>&1; then
-    PACKAGE="com.airplayer.googletv"
-  elif adb shell pm path com.airplayer.firetv >/dev/null 2>&1; then
-    PACKAGE="com.airplayer.firetv"
-  else
-    PACKAGE="com.airplayer.googletv"
-  fi
+  PACKAGE="com.airplayer"
 fi
 
 PID="$(adb shell pidof "$PACKAGE" 2>/dev/null | tr -d '\r' || true)"
@@ -39,7 +33,6 @@ adb logcat -d -v time \
   'AirPlayer:V' \
   'AirPlayReceiver:V' \
   'RtspHandler:V' \
-  'MiracastReceiver:V' \
   > "$OUT_DIR/logcat.txt" || true
 
 {

@@ -11,12 +11,8 @@ This document explains how to run tests, what is tested, and how to perform manu
 Unit tests run on your development machine. They mock Android APIs and test the logic in isolation.
 
 ```bash
-# Run all unit tests for both flavors
+# Run all unit tests
 ./gradlew test
-
-# Run unit tests for a specific flavor
-./gradlew testGoogletvDebugUnitTest
-./gradlew testFiretvDebugUnitTest
 
 # Run a single test class
 ./gradlew test --tests "com.airplayer.airplay.RtspHandlerTest"
@@ -42,15 +38,14 @@ adb devices
 # Run Android Lint
 ./gradlew lint
 
-# Lint results: app/build/reports/lint-results-googletv-debug.html
+# Lint results: app/build/reports/lint-results-debug.html
 ```
 
 ### Full CI Check (same as GitHub Actions)
 
 ```bash
 ./gradlew :test-runner:test
-./gradlew :app:lintGoogletvDebug :app:lintFiretvDebug \
-  :app:assembleGoogletvDebug :app:assembleFiretvDebug
+./gradlew :app:lintDebug :app:assembleDebug
 ```
 
 GitHub Actions runs the same checks on `main`:
@@ -91,7 +86,7 @@ Android framework behavior.
 
 ## Manual Test Scenarios
 
-For acceptance testing before a release, perform all scenarios below on both **Google TV** and **Fire TV**.
+For acceptance testing before a release, perform all scenarios below on an **Android TV / Google TV** device.
 
 ### Before You Start
 
@@ -102,33 +97,17 @@ adb devices -l
 adb logcat -c
 ```
 
-Install the correct debug APK:
+Install the debug APK:
 
 ```bash
-# Google TV with AirPlay/Miracast only
-./gradlew assembleGoogletvDebug
-
-# Google TV with Cast enabled for real testing
-./gradlew assembleGoogletvDebug -Pairplayer.castAppId=<APP_ID>
-
-# Google TV
-adb install -r app/build/outputs/apk/googletv/debug/app-googletv-debug.apk
-
-# Fire TV
-adb install -r app/build/outputs/apk/firetv/debug/app-firetv-debug.apk
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-
-To get the Cast App ID, register the receiver in the Google Cast SDK Developer
-Console and associate the Android TV package `com.airplayer.googletv`. See
-[Google Cast App ID](guides/CAST_APP_ID.md).
 
 After a failed run, collect diagnostics before restarting the app:
 
 ```bash
 tools/collect-device-logs.sh
-
-# Optional: force a package if both flavors are installed
-AIRPLAYER_PACKAGE=com.airplayer.firetv tools/collect-device-logs.sh
 ```
 
 The script writes ADB device details, package info, memory stats, process CPU, and filtered logcat output under `device-test-logs/`.
@@ -208,7 +187,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
    - TV still shows the streaming screen
    - No crash on TV
    - `adb logcat` shows no FATAL or reconnection events
-5. Check RAM: `adb shell dumpsys meminfo com.airplayer.*` should show < 150MB
+5. Check RAM: `adb shell dumpsys meminfo com.airplayer` should show < 150MB
 
 ---
 
@@ -236,10 +215,10 @@ Run these measurements and record them in the release notes:
 
 ```bash
 # RAM usage during streaming
-adb shell dumpsys meminfo com.airplayer.googletv | grep "TOTAL"
+adb shell dumpsys meminfo com.airplayer | grep "TOTAL"
 
 # CPU usage (5-second average) — replace PID with actual process ID
-adb shell top -n 5 -p $(adb shell pidof com.airplayer.googletv) | tail -5
+adb shell top -n 5 -p $(adb shell pidof com.airplayer) | tail -5
 ```
 
 Target values:

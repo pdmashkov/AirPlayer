@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # AirPlayer local release script
 #
-# Builds signed release APKs for GoogleTV and FireTV locally, then publishes
-# a GitHub Release with both APKs attached.
+# Builds a signed release APK locally, then publishes a GitHub Release with it attached.
 #
 # Usage:
 #   ./scripts/release.sh v1.2.0
@@ -129,36 +128,23 @@ cmd_release() {
     bold "=== Building AirPlayer $VERSION ==="
     echo ""
 
-    # Build both flavors
-    echo "▸ Building GoogleTV release APK..."
+    echo "▸ Building release APK..."
     KEYSTORE_PATH="$KEYSTORE_PATH" \
     KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" \
     KEY_ALIAS="$KEY_ALIAS" \
     KEY_PASSWORD="$KEY_PASSWORD" \
-    ./gradlew :app:assembleGoogletvRelease --quiet --stacktrace
+    ./gradlew :app:assembleRelease --quiet --stacktrace
 
-    echo "▸ Building FireTV release APK..."
-    KEYSTORE_PATH="$KEYSTORE_PATH" \
-    KEYSTORE_PASSWORD="$KEYSTORE_PASSWORD" \
-    KEY_ALIAS="$KEY_ALIAS" \
-    KEY_PASSWORD="$KEY_PASSWORD" \
-    ./gradlew :app:assembleFiretvRelease --quiet --stacktrace
+    # Locate and rename the APK
+    APK_SRC="app/build/outputs/apk/release/app-release.apk"
+    APK="AirPlayer-${VERSION}.apk"
 
-    # Locate and rename APKs
-    GOOGLETV_SRC="app/build/outputs/apk/googletv/release/app-googletv-release.apk"
-    FIRETV_SRC="app/build/outputs/apk/firetv/release/app-firetv-release.apk"
-    GOOGLETV_APK="AirPlayer-${VERSION}-googletv.apk"
-    FIRETV_APK="AirPlayer-${VERSION}-firetv.apk"
+    [[ -f "$APK_SRC" ]] || die "Release APK not found at $APK_SRC"
 
-    [[ -f "$GOOGLETV_SRC" ]] || die "GoogleTV APK not found at $GOOGLETV_SRC"
-    [[ -f "$FIRETV_SRC"   ]] || die "FireTV APK not found at $FIRETV_SRC"
+    cp "$APK_SRC" "$APK"
 
-    cp "$GOOGLETV_SRC" "$GOOGLETV_APK"
-    cp "$FIRETV_SRC"   "$FIRETV_APK"
-
-    green "▸ APKs built:"
-    echo "    $GOOGLETV_APK ($(du -sh "$GOOGLETV_APK" | cut -f1))"
-    echo "    $FIRETV_APK   ($(du -sh "$FIRETV_APK"   | cut -f1))"
+    green "▸ APK built:"
+    echo "    $APK ($(du -sh "$APK" | cut -f1))"
     echo ""
 
     # Create and push git tag
@@ -186,11 +172,8 @@ ${COMMITS}
 
 ---
 ### Installation
-Side-load the APK that matches your device:
-- **${GOOGLETV_APK}** — Google TV / Android TV (Android 10+)
-- **${FIRETV_APK}** — Amazon Fire TV (Android 7.1+)
-
-Use [adb](https://developer.android.com/tools/adb) or a sideloading app like *Downloader* to install."
+Side-load **${APK}** (Android TV / Fire TV, Android 7.1+) using
+[adb](https://developer.android.com/tools/adb) or a sideloading app like *Downloader*."
 
     # Determine if pre-release (contains a dash, e.g. v1.0.0-beta.1)
     PRERELEASE_FLAG=""
@@ -201,11 +184,10 @@ Use [adb](https://developer.android.com/tools/adb) or a sideloading app like *Do
         --title "AirPlayer $VERSION" \
         --notes "$RELEASE_NOTES" \
         $PRERELEASE_FLAG \
-        "$GOOGLETV_APK" \
-        "$FIRETV_APK"
+        "$APK"
 
-    # Clean up local APK copies
-    rm -f "$GOOGLETV_APK" "$FIRETV_APK"
+    # Clean up the local APK copy
+    rm -f "$APK"
 
     echo ""
     green "=== Release $VERSION published! ==="

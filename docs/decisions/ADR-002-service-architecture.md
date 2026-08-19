@@ -7,7 +7,9 @@
 
 ## Context
 
-The AirPlay/Miracast/Cast receivers need to run continuously in the background — even when the user switches to a screensaver or a different app. Android may kill background processes. A ForegroundService with a persistent notification is the correct pattern for long-running background operations in Android.
+The AirPlay receiver needs to run continuously in the background — even when the user switches to a screensaver or a different app. Android may kill background processes. A ForegroundService with a persistent notification is the correct pattern for long-running background operations in Android.
+
+> Originally written when AirPlayer also hosted Miracast and Cast receivers (see ADR-001). Both were removed in [ADR-004](ADR-004-airplay-only.md); the ForegroundService rationale below still holds for the single AirPlay receiver.
 
 ## Decision
 
@@ -24,9 +26,7 @@ MainActivity / HomeFragment
       │  bind()
       ▼
 AirPlayerService (ForegroundService)
-  ├── AirPlayReceiver
-  ├── MiracastReceiver
-  └── CastReceiver
+  └── AirPlayReceiver
 ```
 
 ## Consequences

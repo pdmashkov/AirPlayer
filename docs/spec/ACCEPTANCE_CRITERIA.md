@@ -1,10 +1,12 @@
 # AirPlayer – Acceptance Criteria
 
-Version: 1.0
+Version: 2.0
 Status: Draft
-Date: 2026-03-22
+Date: 2026-08-19
 
-This document defines **measurable, verifiable acceptance criteria** for each milestone. A milestone is considered **DONE** only when ALL its criteria pass on ALL target devices (unless the milestone is device-specific).
+> AirPlayer is AirPlay 2 only, shipped as a single build (no product flavors) as of [ADR-004](../decisions/ADR-004-airplay-only.md). Milestone 7 (Fire TV Validation) was removed accordingly.
+
+This document defines **measurable, verifiable acceptance criteria** for each milestone. A milestone is considered **DONE** only when ALL its criteria pass on the target device.
 
 ---
 
@@ -26,20 +28,18 @@ This document defines **measurable, verifiable acceptance criteria** for each mi
 
 ## Milestone 1 – App Starts
 
-**Goal:** The app launches without crashing on both target platforms and shows the Waiting Screen.
+**Goal:** The app launches without crashing on Android TV and shows the Waiting Screen.
 
 | # | Criterion | How to Verify | Pass Condition |
 |---|---|---|---|
-| AC-1.1 | App installs via `adb install` on Google TV | `adb install app-googletv-debug.apk` | Exit code 0, "Success" |
-| AC-1.2 | App installs via `adb install` on Fire TV | `adb install app-firetv-debug.apk` | Exit code 0, "Success" |
-| AC-1.3 | App starts on Google TV without crashing | Launch app, observe for 30s | No crash dialog, no FATAL in logcat |
-| AC-1.4 | App starts on Fire TV without crashing | Launch app, observe for 30s | No crash dialog, no FATAL in logcat |
+| AC-1.1 | App installs via `adb install` | `adb install app-debug.apk` | Exit code 0, "Success" |
+| AC-1.3 | App starts without crashing | Launch app, observe for 30s | No crash dialog, no FATAL in logcat |
 | AC-1.5 | Waiting Screen displays the device name | Visual inspection | Device name matches name in system settings |
 | AC-1.6 | Waiting Screen displays usage instructions | Visual inspection | "Open AirPlay on your Mac..." text visible |
-| AC-1.7 | App builds cleanly for both flavors | `./gradlew assembleDebug` | Exit code 0, 0 errors, 0 warnings (treat warnings as errors) |
+| AC-1.7 | App builds cleanly | `./gradlew assembleDebug` | Exit code 0, 0 errors, 0 warnings (treat warnings as errors) |
 | AC-1.8 | All unit tests pass | `./gradlew test` | Exit code 0, 0 failures |
 
-**Definition of Done:** All 8 criteria pass on both devices. ✅
+**Definition of Done:** All 6 criteria pass. ✅
 
 ---
 
@@ -126,8 +126,8 @@ This document defines **measurable, verifiable acceptance criteria** for each mi
 |---|---|---|---|
 | AC-6.1 | 30-minute continuous stream without crash | Automated timer + logcat monitor | 0 crashes, 0 FATAL in logcat |
 | AC-6.2 | 30-minute continuous stream without unexpected disconnect | Monitor RTSP session | Session stays active for full 30 minutes |
-| AC-6.3 | RAM usage stays ≤ 150 MB throughout the 30-minute test | `adb shell dumpsys meminfo com.airplayer.*` every 5 minutes | Peak ≤ 150 MB at every measurement |
-| AC-6.4 | CPU usage stays ≤ 30% average throughout the 30-minute test | `adb shell top -p $(pidof com.airplayer.*)` | 5-minute rolling average ≤ 30% |
+| AC-6.3 | RAM usage stays ≤ 150 MB throughout the 30-minute test | `adb shell dumpsys meminfo com.airplayer` every 5 minutes | Peak ≤ 150 MB at every measurement |
+| AC-6.4 | CPU usage stays ≤ 30% average throughout the 30-minute test | `adb shell top -p $(pidof com.airplayer)` | 5-minute rolling average ≤ 30% |
 | AC-6.5 | Automatic reconnect after network disruption (Wi-Fi toggle) | Disable and re-enable Wi-Fi on sender Mac | AirPlayer reappears in macOS picker within 5s of reconnect |
 | AC-6.6 | Automatic reconnect after sender disconnects | Disconnect AirPlay from macOS, wait 5s, reconnect | Reconnect completes without restarting the app |
 | AC-6.7 | App survives Android "Don't Keep Activities" developer option | Enable option, background app, return | App still functional after returning from background |
@@ -136,21 +136,9 @@ This document defines **measurable, verifiable acceptance criteria** for each mi
 
 ---
 
-## Milestone 7 – Fire TV Validation
+## Milestone 7 – Fire TV Validation ❌ Removed
 
-**Goal:** All previous milestones also pass on Fire TV.
-
-| # | Criterion | How to Verify | Pass Condition |
-|---|---|---|---|
-| AC-7.1 | All AC-1.x criteria pass on Fire TV | See Milestone 1 | All pass |
-| AC-7.2 | All AC-2.x criteria pass on Fire TV | See Milestone 2 | All pass |
-| AC-7.3 | All AC-3.x criteria pass on Fire TV | See Milestone 3 | All pass |
-| AC-7.4 | All AC-4.x criteria pass on Fire TV | See Milestone 4 | All pass |
-| AC-7.5 | All AC-5.x criteria pass on Fire TV | See Milestone 5 | All pass |
-| AC-7.6 | All AC-6.x criteria pass on Fire TV | See Milestone 6 | All pass |
-| AC-7.7 | `firetv` flavor APK size ≤ 10 MB | `ls -la app-firetv-release.apk` | Size ≤ 10 MB |
-
-**Definition of Done:** All 7 criteria pass on Fire TV. ✅
+**Status:** Removed — see [ADR-004](../decisions/ADR-004-airplay-only.md). The Fire TV flavor was dropped; AirPlayer ships as a single Android TV build.
 
 ---
 
@@ -162,13 +150,12 @@ This document defines **measurable, verifiable acceptance criteria** for each mi
 |---|---|---|---|
 | AC-8.1 | All unit tests pass | `./gradlew test` | Exit code 0 |
 | AC-8.2 | All instrumented tests pass on emulator (API 29) | `./gradlew connectedAndroidTest` | Exit code 0 |
-| AC-8.3 | Release APK builds for `googletv` flavor | `./gradlew assembleGoogletvRelease` | Exit code 0, APK generated |
-| AC-8.4 | Release APK builds for `firetv` flavor | `./gradlew assembleFiretvRelease` | Exit code 0, APK generated |
+| AC-8.3 | Release APK builds | `./gradlew assembleRelease` | Exit code 0, APK generated |
 | AC-8.5 | CI pipeline (GitHub Actions) is green | GitHub Actions status | All workflow checks green |
 | AC-8.6 | No Kotlin compiler errors or warnings | `./gradlew build` | 0 errors, 0 warnings |
-| AC-8.7 | `README.md` contains installation instructions for both platforms | Manual review | Sideloading steps for Google TV and Fire TV present |
+| AC-8.7 | `README.md` contains installation instructions | Manual review | Sideloading steps present |
 | AC-8.8 | `CHANGELOG.md` contains v1.0.0 entry | Manual review | Version entry with release date present |
-| AC-8.9 | GitHub Release created with both APKs attached | GitHub Releases page | Release exists with 2 APK assets |
+| AC-8.9 | GitHub Release created with the APK attached | GitHub Releases page | Release exists with 1 APK asset |
 | AC-8.10 | No known CRITICAL or HIGH severity security issues | Manual security review | 0 critical/high issues |
 
 **Definition of Done:** All 10 criteria pass. ✅

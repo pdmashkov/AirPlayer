@@ -1,23 +1,13 @@
 // App module build configuration for AirPlayer.
 //
-// Two product flavors are defined from the start:
-//   - "googletv": targets Google TV / Android TV (minSdk 29)
-//   - "firetv":   targets Amazon Fire TV (minSdk 25)
-//
-// Shared code lives in src/main/. Flavor-specific overrides in src/googletv/ and src/firetv/.
+// AirPlay 2 only — one universal build, no product flavors. See
+// docs/decisions/ADR-004-airplay-only.md for why Miracast, Google Cast, and the
+// Fire TV flavor were removed.
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
-
-fun String.escapedForBuildConfig(): String =
-    replace("\\", "\\\\").replace("\"", "\\\"")
-
-val castAppId: String =
-    (providers.gradleProperty("airplayer.castAppId").orNull
-        ?: providers.environmentVariable("AIRPLAYER_CAST_APP_ID").orNull
-        ?: "").trim()
 
 android {
     namespace = "com.airplayer"
@@ -25,18 +15,17 @@ android {
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
-        // applicationId is overridden per flavor below
-        minSdk = 25           // Lowest common denominator (Fire TV)
+        applicationId = "com.airplayer"
+        minSdk = 25            // Broadest Android TV compatibility floor (Android 7.1+)
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "CAST_APP_ID", "\"${castAppId.escapedForBuildConfig()}\"")
 
         // Native FairPlay (libplayfair.so) — build for all Android ABIs so AirPlayer runs on
-        // the full range of Android TV / Fire TV hardware (32- and 64-bit ARM, plus x86/x86_64
-        // for Intel devices, ChromeOS, and emulators). Required for Google Play 64-bit compliance.
+        // the full range of Android TV hardware (32- and 64-bit ARM, plus x86/x86_64 for Intel
+        // devices, ChromeOS, and emulators). Required for Google Play 64-bit compliance.
         ndk {
             abiFilters += setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
@@ -47,24 +36,6 @@ android {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
-        }
-    }
-
-    // Two flavors: one for Google TV, one for Amazon Fire TV.
-    // This separation allows flavor-specific code, resources, and dependencies.
-    flavorDimensions += "platform"
-    productFlavors {
-        create("googletv") {
-            dimension = "platform"
-            applicationId = "com.airplayer.googletv"
-            minSdk = 29        // Google TV requires Android 10+
-            versionNameSuffix = "-googletv"
-        }
-        create("firetv") {
-            dimension = "platform"
-            applicationId = "com.airplayer.firetv"
-            minSdk = 25        // Fire TV supports Android 7.1+
-            versionNameSuffix = "-firetv"
         }
     }
 
@@ -111,19 +82,10 @@ android {
         )
     }
 
-    // Source sets: shared code in main, flavor-specific overrides in flavor directories
     sourceSets {
         getByName("main") {
             kotlin.srcDirs("src/main/kotlin")
             res.srcDirs("src/main/res")
-        }
-        getByName("googletv") {
-            kotlin.srcDirs("src/googletv/kotlin")
-            res.srcDirs("src/googletv/res")
-        }
-        getByName("firetv") {
-            kotlin.srcDirs("src/firetv/kotlin")
-            res.srcDirs("src/firetv/res")
         }
         getByName("test") {
             kotlin.srcDirs("src/test/kotlin")
@@ -138,10 +100,6 @@ android {
         abortOnError = true
         checkReleaseBuilds = true
         warningsAsErrors = true
-        // Keep lint focused on AirPlayer sources. The Google Cast SDK pulls a
-        // large transitive graph that exceeds the small CI/dev VM during
-        // dependency lint analysis, while app-source lint still catches local
-        // manifest/resource/API regressions.
         checkDependencies = false
         disable += setOf(
             // Dependency freshness is tracked intentionally, but should not block
@@ -218,10 +176,6 @@ dependencies {
 
     // Binary property lists — AirPlay 2 handshake payloads (GET /info, SETUP)
     implementation(libs.ddplist)
-
-    // Google TV Cast Connect receiver SDK. Kept out of the Fire TV flavor because
-    // Fire TV lacks Google Play Services and cannot run Google Cast receiver APIs.
-    "googletvImplementation"(libs.play.services.cast.tv)
 
     // Unit Testing
     testImplementation(libs.junit)

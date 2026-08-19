@@ -2,7 +2,7 @@
 
 ---
 
-## Device not appearing in AirPlay / Miracast / Cast menu
+## Device not appearing in the AirPlay menu
 
 **Cause 1: Not on the same network**
 - Ensure your Mac/PC and the TV are connected to the **same Wi-Fi network** (same router, same subnet).
@@ -17,12 +17,8 @@
 - Look for "Enable Multicast", "IGMP Snooping", or "mDNS" options in your router's advanced settings.
 
 **Cause 4: AirPlayer service is stopped**
-- Check the HomeScreen: all service cards should show "Running".
+- Check the HomeScreen: the AirPlay status card should show "Running".
 - If stopped, press the **Start** button or swipe to the control card.
-
-**Cause 5: Wi-Fi P2P disabled (Miracast)**
-- Miracast requires Wi-Fi Direct. Some Android TVs disable this.
-- Check: Settings → My Fire TV / Google TV → About → verify Wi-Fi Direct is available.
 
 ---
 
@@ -58,17 +54,8 @@
 
 ## App crashes on startup
 
-1. Check you're using the correct flavor APK for your device.
-2. Try reinstalling: `adb uninstall com.airplayer.googletv` then install again.
-3. Report the crash: attach `adb logcat -d` output to a GitHub Issue.
-
----
-
-## Cast not available on Fire TV
-
-Google Cast requires Google Play Services, which is not available on Amazon Fire TV.
-The Cast toggle in Settings will be automatically hidden on Fire TV devices.
-This is by design and cannot be changed.
+1. Try reinstalling: `adb uninstall com.airplayer` then install again.
+2. Report the crash: attach `adb logcat -d` output to a GitHub Issue.
 
 ---
 
