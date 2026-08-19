@@ -9,7 +9,7 @@
 <resources>
 
     <!-- ── App-wide ────────────────────────────────────────────── -->
-    <string name="app_name">PhairPlay</string>
+    <string name="app_name">AirPlayer</string>
 
     <!-- ── Navigation ──────────────────────────────────────────── -->
     <string name="nav_home">Home</string>
@@ -54,7 +54,7 @@
     <string name="action_restart">Restart</string>
 
     <!-- ── Notification ────────────────────────────────────────── -->
-    <string name="notification_channel_name">PhairPlay Service</string>
+    <string name="notification_channel_name">AirPlayer Service</string>
     <string name="notification_channel_description">Persistent notification for the AirPlay/Miracast/Cast receiver service</string>
     <string name="notification_status_running">Receiver active — advertising on network</string>
     <string name="notification_status_stopped">Receiver stopped</string>

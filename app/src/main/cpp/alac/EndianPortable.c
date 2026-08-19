@@ -40,7 +40,7 @@
 #define TARGET_RT_LITTLE_ENDIAN 1
 #elif defined (TARGET_OS_WIN32)
 #define TARGET_RT_LITTLE_ENDIAN 1
-// PhairPlay: upstream only detected x86/Win32. Android ships ARM/ARM64 (and x86) which are all
+// AirPlayer: upstream only detected x86/Win32. Android ships ARM/ARM64 (and x86) which are all
 // little-endian, but without this the Swap*BtoN routines would no-op and misparse the big-endian
 // ALAC magic cookie + bitstream. Detect endianness from the compiler so every ABI works.
 #elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)

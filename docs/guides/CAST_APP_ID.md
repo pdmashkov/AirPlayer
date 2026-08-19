@@ -1,6 +1,6 @@
 # Google Cast App ID
 
-PhairPlay cannot invent a Google Cast App ID locally. The ID is assigned by
+AirPlayer cannot invent a Google Cast App ID locally. The ID is assigned by
 Google after registering a receiver application in the Google Cast SDK Developer
 Console.
 
@@ -18,10 +18,10 @@ Google's current registration docs:
 `https://developers.google.com/cast/docs/registration`
 
 For an Android TV native receiver, also associate the Android TV package name
-with the Cast App ID in the console. PhairPlay's Google TV package is:
+with the Cast App ID in the console. AirPlayer's Google TV package is:
 
 ```text
-com.phairplay.googletv
+com.airplayer.googletv
 ```
 
 Google's Android TV receiver overview:
@@ -32,16 +32,16 @@ Google's Android TV receiver overview:
 Use either a Gradle property:
 
 ```bash
-./gradlew assembleGoogletvDebug -Pphairplay.castAppId=<APP_ID>
+./gradlew assembleGoogletvDebug -Pairplayer.castAppId=<APP_ID>
 ```
 
 or an environment variable:
 
 ```bash
-PHAIRPLAY_CAST_APP_ID=<APP_ID> ./gradlew assembleGoogletvDebug
+AIRPLAYER_CAST_APP_ID=<APP_ID> ./gradlew assembleGoogletvDebug
 ```
 
-If no ID is supplied, the Google TV build still succeeds, but PhairPlay marks
+If no ID is supplied, the Google TV build still succeeds, but AirPlayer marks
 Cast as an error at runtime instead of pretending Cast is ready for testing.
 With a valid ID, the Google TV flavor starts the official Cast Connect SDK.
 Media load/playback handling still requires hardware validation with matching

@@ -1,6 +1,6 @@
-package com.phairplay.airplay
+package com.airplayer.airplay
 
-import com.phairplay.util.Logger
+import com.airplayer.util.Logger
 
 /**
  * VideoDecoder stub for JVM test compilation.

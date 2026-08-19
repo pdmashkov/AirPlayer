@@ -1,6 +1,6 @@
-# Contributing to PhairPlay
+# Contributing to AirPlayer
 
-Thank you for your interest in contributing to PhairPlay! This document explains how to contribute and the coding standards we follow.
+Thank you for your interest in contributing to AirPlayer! This document explains how to contribute and the coding standards we follow.
 
 ---
 
@@ -54,10 +54,10 @@ Every **class** must have a KDoc header comment explaining:
 
 ```kotlin
 /**
- * MdnsService — Advertises PhairPlay as an AirPlay 2 receiver on the local network.
+ * MdnsService — Advertises AirPlayer as an AirPlay 2 receiver on the local network.
  *
- * WHY: For macOS to show PhairPlay in the AirPlay menu, the device must announce
- * itself using mDNS. Without this, macOS would never know PhairPlay exists.
+ * WHY: For macOS to show AirPlayer in the AirPlay menu, the device must announce
+ * itself using mDNS. Without this, macOS would never know AirPlayer exists.
  *
  * Example:
  *   val mdns = MdnsService(context)
@@ -89,8 +89,8 @@ Every **public method** must have at least one unit test.
 Every **AirPlay protocol step** must have a corresponding test.
 
 Test files must be named `[ClassName]Test.kt` and placed in the matching test directory:
-- Unit tests: `app/src/test/kotlin/com/phairplay/`
-- Instrumented tests: `app/src/androidTest/kotlin/com/phairplay/`
+- Unit tests: `app/src/test/kotlin/com/airplayer/`
+- Instrumented tests: `app/src/androidTest/kotlin/com/airplayer/`
 
 Tests must be commented like production code. A fellow developer should understand what is being tested and why.
 

@@ -1,4 +1,4 @@
-# PhairPlay Testing Guide
+# AirPlayer Testing Guide
 
 This document explains how to run tests, what is tested, and how to perform manual testing on real devices.
 
@@ -19,7 +19,7 @@ Unit tests run on your development machine. They mock Android APIs and test the 
 ./gradlew testFiretvDebugUnitTest
 
 # Run a single test class
-./gradlew test --tests "com.phairplay.airplay.RtspHandlerTest"
+./gradlew test --tests "com.airplayer.airplay.RtspHandlerTest"
 ```
 
 Test results are in: `app/build/reports/tests/`
@@ -109,7 +109,7 @@ Install the correct debug APK:
 ./gradlew assembleGoogletvDebug
 
 # Google TV with Cast enabled for real testing
-./gradlew assembleGoogletvDebug -Pphairplay.castAppId=<APP_ID>
+./gradlew assembleGoogletvDebug -Pairplayer.castAppId=<APP_ID>
 
 # Google TV
 adb install -r app/build/outputs/apk/googletv/debug/app-googletv-debug.apk
@@ -119,7 +119,7 @@ adb install -r app/build/outputs/apk/firetv/debug/app-firetv-debug.apk
 ```
 
 To get the Cast App ID, register the receiver in the Google Cast SDK Developer
-Console and associate the Android TV package `com.phairplay.googletv`. See
+Console and associate the Android TV package `com.airplayer.googletv`. See
 [Google Cast App ID](guides/CAST_APP_ID.md).
 
 After a failed run, collect diagnostics before restarting the app:
@@ -128,7 +128,7 @@ After a failed run, collect diagnostics before restarting the app:
 tools/collect-device-logs.sh
 
 # Optional: force a package if both flavors are installed
-PHAIRPLAY_PACKAGE=com.phairplay.firetv tools/collect-device-logs.sh
+AIRPLAYER_PACKAGE=com.airplayer.firetv tools/collect-device-logs.sh
 ```
 
 The script writes ADB device details, package info, memory stats, process CPU, and filtered logcat output under `device-test-logs/`.
@@ -137,7 +137,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 **Goal:** App starts and shows the WaitingScreen without crashing.
 
 1. Install the debug APK via `adb install`
-2. Launch PhairPlay from the TV app list
+2. Launch AirPlayer from the TV app list
 3. **Expected:** WaitingScreen appears with the TV's device name
 4. **Check:** No crash dialog, no FATAL in `adb logcat`
 5. **Pass condition:** App remains stable for 30 seconds after launch
@@ -145,14 +145,14 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 ---
 
 ### Scenario 2: mDNS Discovery (Milestone 2)
-**Goal:** macOS discovers PhairPlay in the AirPlay menu within 3 seconds.
+**Goal:** macOS discovers AirPlayer in the AirPlay menu within 3 seconds.
 
 1. Ensure Mac and TV are on the same Wi-Fi network
-2. Launch PhairPlay on the TV
+2. Launch AirPlayer on the TV
 3. Start a timer on your phone
 4. On your Mac, click the AirPlay icon in the menu bar (or System Preferences → Displays → AirPlay Display)
 5. **Expected:** TV name appears in the AirPlay menu within 3 seconds
-6. Close PhairPlay (press Back on TV)
+6. Close AirPlayer (press Back on TV)
 7. **Expected:** TV name disappears from the AirPlay menu within 10 seconds
 
 ---
@@ -160,7 +160,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 ### Scenario 3: Screen Mirroring Connection (Milestone 3)
 **Goal:** Successful RTSP handshake — macOS connects without errors.
 
-1. Launch PhairPlay on the TV
+1. Launch AirPlayer on the TV
 2. On your Mac, select the TV from the AirPlay menu
 3. **Expected:** StreamingScreen appears on TV (transitions from WaitingScreen)
 4. Check `adb logcat` for RTSP messages:
@@ -174,7 +174,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 ### Scenario 4: Video Quality (Milestone 4)
 **Goal:** Video plays at ≥25fps with ≤100ms latency.
 
-1. Connect macOS to PhairPlay as in Scenario 3
+1. Connect macOS to AirPlayer as in Scenario 3
 2. On your Mac, open a terminal and run: `watch -n 0.1 date +%T.%3N` (shows a millisecond clock)
 3. Look at the TV screen
 4. **Expected:**
@@ -191,7 +191,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 **Goal:** Audio plays in sync with video.
 
 1. Find an A/V sync test video (search for "A/V sync test clapper board")
-2. Connect macOS to PhairPlay
+2. Connect macOS to AirPlayer
 3. Play the test video on your Mac (it should be mirrored to the TV)
 4. **Expected:** When the clapper board snaps shut, the sound happens at the same moment visually
 5. **Fail condition:** Audio is more than ~40ms ahead or behind the video
@@ -201,14 +201,14 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 ### Scenario 6: Stability (Milestone 6)
 **Goal:** 30-minute continuous stream without disconnect or crash.
 
-1. Connect macOS to PhairPlay
+1. Connect macOS to AirPlayer
 2. Start a timer
 3. Keep the Mac active and streaming (move the mouse occasionally, watch something)
 4. **Expected after 30 minutes:**
    - TV still shows the streaming screen
    - No crash on TV
    - `adb logcat` shows no FATAL or reconnection events
-5. Check RAM: `adb shell dumpsys meminfo com.phairplay.*` should show < 150MB
+5. Check RAM: `adb shell dumpsys meminfo com.airplayer.*` should show < 150MB
 
 ---
 
@@ -216,7 +216,7 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 **Goal:** Automatic reconnect works.
 
 **Test 7a: Sender disconnects:**
-1. Connect macOS to PhairPlay
+1. Connect macOS to AirPlayer
 2. On your Mac, click the AirPlay icon and select "Turn Off AirPlay Mirroring"
 3. **Expected:** TV shows WaitingScreen within 2 seconds
 4. Wait 5 seconds
@@ -224,9 +224,9 @@ The script writes ADB device details, package info, memory stats, process CPU, a
 6. **Expected:** Streaming resumes without restarting the app
 
 **Test 7b: Network interruption:**
-1. Connect macOS to PhairPlay
+1. Connect macOS to AirPlayer
 2. Briefly disable and re-enable Wi-Fi on your Mac (or unplug/replug Ethernet)
-3. **Expected:** PhairPlay reappears in the macOS AirPlay menu within 5 seconds of network restoration
+3. **Expected:** AirPlayer reappears in the macOS AirPlay menu within 5 seconds of network restoration
 
 ---
 
@@ -236,10 +236,10 @@ Run these measurements and record them in the release notes:
 
 ```bash
 # RAM usage during streaming
-adb shell dumpsys meminfo com.phairplay.googletv | grep "TOTAL"
+adb shell dumpsys meminfo com.airplayer.googletv | grep "TOTAL"
 
 # CPU usage (5-second average) — replace PID with actual process ID
-adb shell top -n 5 -p $(adb shell pidof com.phairplay.googletv) | tail -5
+adb shell top -n 5 -p $(adb shell pidof com.airplayer.googletv) | tail -5
 ```
 
 Target values:

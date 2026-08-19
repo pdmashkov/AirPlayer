@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    AndroidManifest.xml for PhairPlay.
+    AndroidManifest.xml for AirPlayer.
 
     Permission philosophy: request ONLY what is strictly necessary.
     See docs/spec/REQUIREMENTS.md §2.3 for the full permission rationale.
@@ -67,12 +67,12 @@
         android:required="false" />
 
     <application
-        android:name=".PhairPlayApp"
+        android:name=".AirPlayerApp"
         android:allowBackup="false"
         android:banner="@drawable/app_banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.PhairPlay"
+        android:theme="@style/Theme.AirPlayer"
         android:supportsRtl="true">
 
         <!--
@@ -92,7 +92,7 @@
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
-            android:theme="@style/Theme.PhairPlay.Fullscreen">
+            android:theme="@style/Theme.AirPlayer.Fullscreen">
 
             <!-- Makes the app launchable from the TV home screen -->
             <intent-filter>
@@ -102,7 +102,7 @@
         </activity>
 
         <!--
-            PhairPlayService — persistent foreground service that manages
+            AirPlayerService — persistent foreground service that manages
             AirPlay, Miracast, and Cast receivers.
 
             - foregroundServiceType="connectedDevice": required for Android 14+
@@ -111,12 +111,12 @@
             - START_STICKY: service restarts automatically if killed by the system
         -->
         <service
-            android:name=".service.PhairPlayService"
+            android:name=".service.AirPlayerService"
             android:foregroundServiceType="connectedDevice"
             android:exported="false" />
 
         <!--
-            BootReceiver — listens for BOOT_COMPLETED and starts PhairPlayService
+            BootReceiver — listens for BOOT_COMPLETED and starts AirPlayerService
             if the "Start on boot" setting is enabled.
             exported="false" because it is only triggered by the system broadcast.
         -->

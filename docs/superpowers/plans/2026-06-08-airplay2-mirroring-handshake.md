@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make PhairPlay actually receive a macOS screen-mirroring session by implementing the AirPlay 2 handshake it currently lacks: `GET /info` → `pair-setup`/`pair-verify` → `fp-setup` (FairPlay) → encrypted `SETUP` → the encrypted H.264 mirroring stream, decoded to the existing `VideoDecoder`.
+**Goal:** Make AirPlayer actually receive a macOS screen-mirroring session by implementing the AirPlay 2 handshake it currently lacks: `GET /info` → `pair-setup`/`pair-verify` → `fp-setup` (FairPlay) → encrypted `SETUP` → the encrypted H.264 mirroring stream, decoded to the existing `VideoDecoder`.
 
-**Architecture:** PhairPlay already has the *back half* of a receiver (RTSP request reader, H.264 `VideoDecoder` → `Surface`, mDNS advertising). It is missing the *front half* — the HTTP-over-RTSP handshake macOS requires. We add that as a set of focused handler modules under `com.phairplay.airplay.handshake`, route `GET`/`POST` by URI path in `RtspHandler`, add a binary-safe response writer, layer ChaCha20-Poly1305 encryption onto the control socket after `pair-verify`, port the reverse-engineered FairPlay key exchange, and stream the decrypted mirroring video into the existing decoder.
+**Architecture:** AirPlayer already has the *back half* of a receiver (RTSP request reader, H.264 `VideoDecoder` → `Surface`, mDNS advertising). It is missing the *front half* — the HTTP-over-RTSP handshake macOS requires. We add that as a set of focused handler modules under `com.airplayer.airplay.handshake`, route `GET`/`POST` by URI path in `RtspHandler`, add a binary-safe response writer, layer ChaCha20-Poly1305 encryption onto the control socket after `pair-verify`, port the reverse-engineered FairPlay key exchange, and stream the decrypted mirroring video into the existing decoder.
 
 **Tech Stack:** Kotlin, Android `MediaCodec` (already used), BouncyCastle `bcprov-jdk18on:1.78.1` (already a dependency — X25519, Ed25519, ChaCha20-Poly1305, AES, HKDF, SHA-512), and a new binary-plist dependency `dd-plist`. Build/test loop: `./gradlew :app:assembleFiretvDebug` → `adb install -r` → `adb logcat` against the real Mac at `192.168.100.6`.
 
@@ -27,7 +27,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 
 ## File Structure
 
-**New package `app/src/main/kotlin/com/phairplay/airplay/handshake/`:**
+**New package `app/src/main/kotlin/com/airplayer/airplay/handshake/`:**
 - `PlistCodec.kt` — encode/decode Apple binary plists ↔ `Map<String, Any?>` (wraps dd-plist).
 - `Tlv8.kt` — HomeKit-style TLV8 encode/decode used by pair-setup/verify.
 - `InfoResponder.kt` — builds the `GET /info` binary-plist body.
@@ -40,10 +40,10 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 - `MirrorStreamServer.kt` — accepts the mirroring data TCP connection, parses the 128-byte packet headers, AES-decrypts H.264, feeds `VideoDecoder`.
 
 **Modified files:**
-- `app/src/main/kotlin/com/phairplay/airplay/RtspMessages.kt` — add binary body + content-type to `RtspResponse`.
-- `app/src/main/kotlin/com/phairplay/airplay/RtspHandler.kt` — binary `sendResponse`, `GET`/`POST` path routing, encryption hooks, mirror-setup wiring.
-- `app/src/main/kotlin/com/phairplay/airplay/AirPlayReceiver.kt` — wire mirror stream → `VideoDecoder`; provide the surface for mirroring (not only RECORD).
-- `app/src/main/kotlin/com/phairplay/airplay/MdnsService.kt` — add the `pk` (Ed25519 public key) and confirm `features`/`flags` advertise mirroring+pairing.
+- `app/src/main/kotlin/com/airplayer/airplay/RtspMessages.kt` — add binary body + content-type to `RtspResponse`.
+- `app/src/main/kotlin/com/airplayer/airplay/RtspHandler.kt` — binary `sendResponse`, `GET`/`POST` path routing, encryption hooks, mirror-setup wiring.
+- `app/src/main/kotlin/com/airplayer/airplay/AirPlayReceiver.kt` — wire mirror stream → `VideoDecoder`; provide the surface for mirroring (not only RECORD).
+- `app/src/main/kotlin/com/airplayer/airplay/MdnsService.kt` — add the `pk` (Ed25519 public key) and confirm `features`/`flags` advertise mirroring+pairing.
 - `gradle/libs.versions.toml`, `app/build.gradle.kts` — add dd-plist.
 
 ---
@@ -67,7 +67,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 0.2: Give `RtspResponse` a binary body
 
 **Files:**
-- Modify: `app/src/main/kotlin/com/phairplay/airplay/RtspMessages.kt`
+- Modify: `app/src/main/kotlin/com/airplayer/airplay/RtspMessages.kt`
 
 - [ ] **Step 1:** Add fields to `RtspResponse` (keep existing `body: String` for the legacy SDP/text paths):
   ```kotlin
@@ -92,7 +92,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 0.3: Make `sendResponse` binary-safe
 
 **Files:**
-- Modify: `app/src/main/kotlin/com/phairplay/airplay/RtspHandler.kt` (the `sendResponse` function, ~line 320)
+- Modify: `app/src/main/kotlin/com/airplayer/airplay/RtspHandler.kt` (the `sendResponse` function, ~line 320)
 
 - [ ] **Step 1:** Replace `sendResponse` with a version that writes ASCII headers then raw bytes, using byte length and an optional Content-Type:
   ```kotlin
@@ -120,7 +120,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 0.4: Route `GET`/`POST` by URI path
 
 **Files:**
-- Modify: `app/src/main/kotlin/com/phairplay/airplay/RtspHandler.kt` (the `routeRequest` `when`, ~line 148)
+- Modify: `app/src/main/kotlin/com/airplayer/airplay/RtspHandler.kt` (the `routeRequest` `when`, ~line 148)
 
 - [ ] **Step 1:** Add `GET` and `POST` arms that dispatch on `request.uri.substringBefore("?")`:
   ```kotlin
@@ -149,13 +149,13 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 1.1: PlistCodec round-trip (TDD)
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/PlistCodec.kt`
-- Test: `app/src/test/kotlin/com/phairplay/airplay/handshake/PlistCodecTest.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/PlistCodec.kt`
+- Test: `app/src/test/kotlin/com/airplayer/airplay/handshake/PlistCodecTest.kt`
 
 - [ ] **Step 1 (RED):** Write a test that a `Map<String,Any?>` encoded to a binary plist and decoded back is equal, and that the encoded bytes start with the bplist magic `"bplist00"`.
   ```kotlin
   @Test fun roundTripsMap() {
-      val m = mapOf("name" to "PhairPlay", "n" to 7L, "b" to true)
+      val m = mapOf("name" to "AirPlayer", "n" to 7L, "b" to true)
       val bytes = PlistCodec.encode(m)
       assertEquals("bplist00", String(bytes.copyOf(8), Charsets.US_ASCII))
       assertEquals(m, PlistCodec.decode(bytes))
@@ -169,13 +169,13 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 1.2: `/info` response body
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/InfoResponder.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/InfoResponder.kt`
 - Modify: `RtspHandler.handleInfo`
 
 - [ ] **Step 1:** Implement `InfoResponder.build(): ByteArray` returning a bplist with the capability keys macOS reads. Port the exact key set + `features`/`statusFlags` values from UxPlay `lib/raop_handlers.h` (`raop_handler_info`). Minimum keys: `deviceID`, `features` (Long, must match the mDNS `features`), `statusFlags`, `model` ("AppleTV5,3"), `name`, `sourceVersion` ("220.68"), `pi`, `pk` (32-byte Ed25519 public key, see Task 2.1), `vv` (2), and the `audioFormats`/`displays` arrays (copy from UxPlay). `displays` must advertise the TV resolution (1920×1080).
 - [ ] **Step 2:** `handleInfo` returns `RtspResponse(200, "OK", bodyBytes = InfoResponder.build(), contentType = "application/x-apple-binary-plist", protocol = request.responseProtocol())`.
 - [ ] **Step 3:** Build/install/relaunch, clear logs, attempt from Mac.
-- [ ] **On-device checkpoint:** macOS still sends `POST /pair-setup` (and may now retry with a *larger* pair-setup body, indicating it accepted `/info`). Confirm no plist parse errors logged on the Mac side isn't observable, so rely on: PhairPlay logs `GET /info` then `POST /pair-setup` repeatedly without macOS giving up immediately.
+- [ ] **On-device checkpoint:** macOS still sends `POST /pair-setup` (and may now retry with a *larger* pair-setup body, indicating it accepted `/info`). Confirm no plist parse errors logged on the Mac side isn't observable, so rely on: AirPlayer logs `GET /info` then `POST /pair-setup` repeatedly without macOS giving up immediately.
 - [ ] **Step 4:** Commit: `feat(airplay): implement GET /info capability response`.
 
 ---
@@ -187,19 +187,19 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 2.1: Persistent Ed25519 identity
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/PairingKeys.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/PairingKeys.kt`
 - Test: `.../handshake/PairingKeysTest.kt`
 
 - [ ] **Step 1 (RED):** Test that `PairingKeys.get(context).ed25519Public` is 32 bytes and is stable across two calls.
 - [ ] **Step 2:** Run test — FAIL.
-- [ ] **Step 3 (GREEN):** Generate an Ed25519 keypair with BouncyCastle (`Ed25519PrivateKeyParameters`), persist the 32-byte seed in SharedPreferences (`phairplay_prefs`, key `pairing_ed25519_seed`), expose `ed25519Public: ByteArray`, `sign(data): ByteArray`.
+- [ ] **Step 3 (GREEN):** Generate an Ed25519 keypair with BouncyCastle (`Ed25519PrivateKeyParameters`), persist the 32-byte seed in SharedPreferences (`airplayer_prefs`, key `pairing_ed25519_seed`), expose `ed25519Public: ByteArray`, `sign(data): ByteArray`.
 - [ ] **Step 4:** Run test — PASS. Commit: `feat(airplay): persistent Ed25519 pairing identity`.
 - [ ] **Step 5:** Wire `pk` into `MdnsService` TXT (`setAttribute("pk", hex(ed25519Public))`) and into `InfoResponder`.
 
 ### Task 2.2: TLV8 codec (TDD)
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/Tlv8.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/Tlv8.kt`
 - Test: `.../handshake/Tlv8Test.kt`
 
 - [ ] **Step 1 (RED):** Test round-trip including a value >255 bytes (must split into multiple fragments of the same type and reassemble). Vectors: type `0x06`=state, `0x03`=publicKey.
@@ -210,7 +210,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 2.3: pair-setup (transient) + pair-verify
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/PairSetupHandler.kt`, `PairVerifyHandler.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/PairSetupHandler.kt`, `PairVerifyHandler.kt`
 - Test: `.../handshake/PairVerifyHandlerTest.kt`
 
 - [ ] **Step 1:** Implement `PairSetupHandler.handle(request)`:
@@ -228,7 +228,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 2.4: Control-channel encryption
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/ControlCipher.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/ControlCipher.kt`
 - Modify: `RtspHandler` (`encryptedChannel`, the read path in `requestReader`, and `sendResponse`)
 
 - [ ] **Step 1:** Implement `ControlCipher` holding the two HKDF keys + per-direction counters; AirPlay frames encrypted control data as `[2-byte LE length][ciphertext][16-byte Poly1305 tag]` with a 12-byte nonce = 8-byte LE counter (zero-padded). Provide `wrapInput(InputStream): InputStream` and `wrapOutput(OutputStream): OutputStream` that transparently decrypt/encrypt these frames.
@@ -246,7 +246,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 3.1: Port FairPlay (TDD against shipped vectors)
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/FairPlay.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/FairPlay.kt`
 - Test: `.../handshake/FairPlayTest.kt`
 
 - [ ] **Step 1 (RED):** Using the known `fp-setup` request/response pairs from RPiPlay's source (the 16-byte mode-1 replies and the 142-byte mode-3 setup), assert `FairPlay.handleSetup(stage1Bytes)` returns the exact expected 142-byte (or 32-byte) response bytes.
@@ -266,7 +266,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 4.1: Parse SETUP and build the response
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/MirrorSetupHandler.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/MirrorSetupHandler.kt`
 - Modify: `RtspHandler` routing (`"SETUP"` arm must call this when the body is a plist, not SDP)
 
 - [ ] **Step 1:** Detect plist SETUP (Content-Type `application/x-apple-binary-plist`) vs legacy SDP SETUP and branch. For plist SETUP:
@@ -285,7 +285,7 @@ This is **protocol reverse-engineering**, not greenfield feature work, so the TD
 ### Task 5.1: Stream key derivation + packet parser (TDD)
 
 **Files:**
-- Create: `app/src/main/kotlin/com/phairplay/airplay/handshake/MirrorStreamServer.kt`
+- Create: `app/src/main/kotlin/com/airplayer/airplay/handshake/MirrorStreamServer.kt`
 - Test: `.../handshake/MirrorPacketTest.kt`
 
 - [ ] **Step 1 (RED):** Test the header parser against a captured/known 128-byte mirror header: extract `payloadSize` (LE int at offset 0), `payloadType` (offset 4, low 8 bits: 0=video, 1=codec/SPS-PPS), and `timestamp`. Test AES-CTR key derivation: `aesKeyMirror = SHA512(aesKey ‖ "AirPlayStreamKey" ‖ streamConnectionID)[0..16]`, `aesIV = SHA512(aesKey ‖ "AirPlayStreamIV" ‖ streamConnectionID)[0..16]` (confirm exact label strings against `raop_rtp_mirror.c`).

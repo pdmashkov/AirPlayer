@@ -7,7 +7,7 @@
 
 ## Context
 
-PhairPlay v1.0 was scoped to AirPlay 2 only (macOS senders). User feedback indicated demand for Miracast (Windows/Android senders) and Google Cast (Chrome/Android senders). Supporting all three makes PhairPlay a universal wireless display receiver.
+AirPlayer v1.0 was scoped to AirPlay 2 only (macOS senders). User feedback indicated demand for Miracast (Windows/Android senders) and Google Cast (Chrome/Android senders). Supporting all three makes AirPlayer a universal wireless display receiver.
 
 ## Decision
 
@@ -20,7 +20,7 @@ Each protocol is implemented as an independent component that can be enabled/dis
 
 ## Rationale
 
-1. **User experience**: Users should not need to know which protocol their sender uses. PhairPlay simply works.
+1. **User experience**: Users should not need to know which protocol their sender uses. AirPlayer simply works.
 2. **Independence**: Protocols don't share network ports or state. One can fail without affecting others.
 3. **Graceful degradation**: If a protocol is unavailable (e.g., Cast on Fire TV without GMS), it is hidden in the UI.
 

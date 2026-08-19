@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers every way to install PhairPlay on your Android TV or Fire TV device.
+This guide covers every way to install AirPlayer on your Android TV or Fire TV device.
 
 ---
 
@@ -51,7 +51,7 @@ adb install app-firetv-release.apk
 
 ### Step 5: Launch
 
-Find **PhairPlay** in your app list and launch it.
+Find **AirPlayer** in your app list and launch it.
 
 ---
 
@@ -68,14 +68,14 @@ Use the **Downloader** app (available in the Fire TV app store) to download the 
 ## Method 3: Build from Source
 
 ```bash
-git clone https://github.com/mazer666/PhairPlay.git
-cd PhairPlay
+git clone https://github.com/mazer666/AirPlayer.git
+cd AirPlayer
 
 # Build for Google TV
 ./gradlew assembleGoogletvRelease
 
 # Build for Google TV with a registered Cast App ID
-./gradlew assembleGoogletvRelease -Pphairplay.castAppId=<APP_ID>
+./gradlew assembleGoogletvRelease -Pairplayer.castAppId=<APP_ID>
 
 # Build for Fire TV
 ./gradlew assembleFiretvRelease
@@ -90,7 +90,7 @@ Google Cast requires a registered Cast App ID for real testing. See
 
 ## After Installation
 
-1. Launch PhairPlay — the **HomeScreen** appears showing three service cards
+1. Launch AirPlayer — the **HomeScreen** appears showing three service cards
 2. All services (AirPlay, Miracast, Cast) are enabled by default
 3. On your Mac: click the AirPlay icon → select your TV
 4. On Windows: Settings → Display → Connect to wireless display → select your TV

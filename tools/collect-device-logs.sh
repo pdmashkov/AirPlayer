@@ -2,7 +2,7 @@
 set -euo pipefail
 
 OUT_DIR="${1:-device-test-logs/$(date -u +%Y%m%dT%H%M%SZ)}"
-PACKAGE="${PHAIRPLAY_PACKAGE:-}"
+PACKAGE="${AIRPLAYER_PACKAGE:-}"
 
 mkdir -p "$OUT_DIR"
 
@@ -12,12 +12,12 @@ if ! command -v adb >/dev/null 2>&1; then
 fi
 
 if [[ -z "$PACKAGE" ]]; then
-  if adb shell pm path com.phairplay.googletv >/dev/null 2>&1; then
-    PACKAGE="com.phairplay.googletv"
-  elif adb shell pm path com.phairplay.firetv >/dev/null 2>&1; then
-    PACKAGE="com.phairplay.firetv"
+  if adb shell pm path com.airplayer.googletv >/dev/null 2>&1; then
+    PACKAGE="com.airplayer.googletv"
+  elif adb shell pm path com.airplayer.firetv >/dev/null 2>&1; then
+    PACKAGE="com.airplayer.firetv"
   else
-    PACKAGE="com.phairplay.googletv"
+    PACKAGE="com.airplayer.googletv"
   fi
 fi
 
@@ -36,7 +36,7 @@ fi
 
 adb logcat -d -v time \
   '*:W' \
-  'PhairPlay:V' \
+  'AirPlayer:V' \
   'AirPlayReceiver:V' \
   'RtspHandler:V' \
   'MiracastReceiver:V' \
