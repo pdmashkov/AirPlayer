@@ -452,10 +452,25 @@ class AirPlayReceiver(
     private fun startMirrorStream(streamConnectionId: Long): Int {
         val aesKey = mirrorAesKey ?: run { Logger.e("mirror stream start before keys set"); return 0 }
         val ecdhSecret = mirrorEcdhSecret ?: return 0
-        return MirrorStreamServer(aesKey, ecdhSecret, streamConnectionId, videoSurfaceProvider, mirrorWidth, mirrorHeight)
+        return MirrorStreamServer(
+            aesKey, ecdhSecret, streamConnectionId, videoSurfaceProvider, mirrorWidth, mirrorHeight,
+            onStalled = { onMirrorStalled() }
+        )
             .also { mirrorServer = it; it.start(scope); videoPlaying = true; emitNowPlaying() }
             .dataPort
             .also { Logger.i("Mirror data server started on port $it") }
+    }
+
+    /**
+     * Called from [MirrorStreamServer]'s watchdog thread when the video pipe never resumed after a
+     * surface regain (TV screensaver dismissed, but macOS's mirror data connection stayed silent).
+     * Forces the control connection closed so the receiver falls back to ADVERTISING immediately
+     * instead of sitting on a black screen that still reports CONNECTED — the same recovery a manual
+     * disconnect/reconnect from macOS already achieves, just automatic.
+     */
+    private fun onMirrorStalled() {
+        Logger.w("Mirror stream stalled — forcing a full session reset so the sender can reconnect")
+        rtspHandler?.closeActiveConnection()
     }
 
     /** Mirror SETUP audio stream (type 96): start the AAC-ELD / AAC-LC / ALAC audio server. @return (dataPort, controlPort). */
