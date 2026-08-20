@@ -143,6 +143,16 @@ open class RtspHandler(
         }
     }
 
+    /**
+     * Forcibly closes the current control connection, as if macOS had dropped it — used to recover
+     * from a stalled session (e.g. mirroring stopped producing frames) without a full server stop.
+     * [handleClient]'s read loop breaks on the closed socket and runs its normal teardown path
+     * ([onStreamingStopped]), re-advertising immediately so the sender can reconnect.
+     */
+    fun closeActiveConnection() {
+        try { activeClient?.close() } catch (e: Exception) { /* non-fatal */ }
+    }
+
     /** Stops the RTSP server. */
     fun stop() {
         running = false

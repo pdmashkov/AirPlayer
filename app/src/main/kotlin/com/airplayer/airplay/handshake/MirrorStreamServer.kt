@@ -37,6 +37,7 @@ class MirrorStreamServer(
     private val surfaceProvider: () -> Surface?,
     private val width: Int = 1920,
     private val height: Int = 1080,
+    private val onStalled: () -> Unit = {},
 ) {
     private sealed class Item
     private class Config(val sps: ByteArray, val pps: ByteArray) : Item()
@@ -55,6 +56,12 @@ class MirrorStreamServer(
     // the app backgrounds and creates a NEW one on return, so we watch for the identity changing
     // and rebuild the decoder — otherwise video stays black after foregrounding.
     @Volatile private var configuredSurface: Surface? = null
+    // Armed when the decoder is rebuilt after regaining a surface mid-session (app backgrounded by
+    // the TV's screensaver, then foregrounded again) — 0 means disarmed. If no frame actually decodes
+    // before this deadline, the mirror data connection itself has silently died (not just the
+    // Surface), so runStallWatchdog forces a full reconnect instead of leaving a permanent black
+    // screen with a still-"connected" state.
+    @Volatile private var recoveryDeadlineMs = 0L
     private var framePtsUs = 0L
     private var framesIn = 0
     private var framesDropped = 0
@@ -70,6 +77,7 @@ class MirrorStreamServer(
         running = true
         scope.launch(Dispatchers.IO) { runReader() }
         scope.launch(Dispatchers.IO) { runDecoder() }
+        scope.launch(Dispatchers.IO) { runStallWatchdog() }
     }
 
     fun stop() {
@@ -184,6 +192,10 @@ class MirrorStreamServer(
      * frame (frames are dropped until then).
      */
     private fun rebuildDecoder(surface: Surface?) {
+        // Only a genuine mid-session regain (we'd already decoded frames, and were surface-less)
+        // arms the watchdog — the initial attach also passes through here with configuredSurface
+        // still null, but that's not a recovery, just startup.
+        val regainingAfterLoss = surface != null && configuredSurface == null && framesIn > 0
         decoder?.release()
         decoder = null
         configuredSurface = surface
@@ -195,6 +207,10 @@ class MirrorStreamServer(
         awaitingKeyframe = true                                // a fresh decoder must start at an IDR
         StreamStats.videoRes = "${width}x${height}"
         Logger.i("Mirror decoder (re)built for surface (sps=${sps.size}B pps=${pps.size}B)")
+        if (regainingAfterLoss) {
+            recoveryDeadlineMs = System.currentTimeMillis() + RECOVERY_GRACE_MS
+            Logger.i("Mirror: armed stall watchdog after surface regain (grace=${RECOVERY_GRACE_MS}ms)")
+        }
     }
 
     private fun decodeFrame(annexB: ByteArray) {
@@ -221,6 +237,28 @@ class MirrorStreamServer(
         if (framePtsUs == 0L) Logger.i("Mirror: first video frame fed to decoder (${annexB.size}B)")
         d.decodeNalUnit(annexB, framePtsUs)
         framePtsUs += FRAME_INTERVAL_US
+        recoveryDeadlineMs = 0L                                // real progress — disarm the watchdog
+    }
+
+    /**
+     * Ticks while [running], forcing a full reconnect if [recoveryDeadlineMs] is armed and expires —
+     * i.e. the Surface came back after a background/foreground cycle but no frame decoded within the
+     * grace window. That means the mirror data connection itself died silently (macOS stopped
+     * sending, or the socket wedged) rather than just the Surface being torn down, so the normal
+     * per-frame reattach in [decodeFrame] never gets a chance to run again. Without this, the app
+     * would sit on a stale frame forever while still reporting CONNECTED, forcing the user to
+     * manually disconnect and re-pair from macOS to recover.
+     */
+    private fun runStallWatchdog() {
+        while (running) {
+            try { Thread.sleep(WATCHDOG_TICK_MS) } catch (_: InterruptedException) { return }
+            val deadline = recoveryDeadlineMs
+            if (deadline != 0L && System.currentTimeMillis() > deadline) {
+                recoveryDeadlineMs = 0L
+                Logger.w("Mirror: no video resumed within ${RECOVERY_GRACE_MS}ms of surface regain — forcing reconnect")
+                onStalled()
+            }
+        }
     }
 
     /** True if the Annex-B frame contains an IDR NAL unit (type 5) — a decodable resync point. */
@@ -270,5 +308,7 @@ class MirrorStreamServer(
         private const val QUEUE_CAPACITY = 90                  // ~1.5s @60fps before dropping
         private const val SURFACE_WAIT_TRIES = 50
         private const val SURFACE_WAIT_MS = 100L
+        private const val WATCHDOG_TICK_MS = 1_000L
+        private const val RECOVERY_GRACE_MS = 6_000L
     }
 }

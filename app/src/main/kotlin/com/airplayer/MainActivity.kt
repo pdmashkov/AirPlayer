@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -71,6 +73,16 @@ class MainActivity : AppCompatActivity() {
     private var currentPhotoFrame: PhotoFrame? = null
     private var currentNowPlaying: NowPlayingInfo? = null
     private var currentPin: String? = null
+    // observeOverlayState()'s collectors run on lifecycleScope (cancelled only at onDestroy, not
+    // onStop), so they keep observing across a stop/start cycle — e.g. the TV's screensaver
+    // occluding the app fires onStop/onStart without killing the Activity. Guard against launching a
+    // second set of collectors on every rebind, which would pile up duplicate work each cycle.
+    private var overlayObserversStarted = false
+
+    // Second, independent signal against the TV's screensaver alongside FLAG_KEEP_SCREEN_ON — some
+    // Android TV builds' idle/dream check also consults MediaSessionManager for an active playback
+    // session before dreaming. Created lazily so a never-streamed app run never touches it.
+    private val mediaSessionLazy = lazy { MediaSession(this, "AirPlayer") }
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -82,7 +94,10 @@ class MainActivity : AppCompatActivity() {
             service?.setVideoSurfaceProvider { getVideoSurface() }
 
             // Show/hide the full-screen overlay for video streams and photos.
-            observeOverlayState()
+            if (!overlayObserversStarted) {
+                overlayObserversStarted = true
+                observeOverlayState()
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -125,8 +140,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Clear surface reference before unbinding to avoid holding a dead Surface
-        service?.setVideoSurfaceProvider { null }
+        // Deliberately NOT nulling the surface provider here. It's a live lookup
+        // (getVideoSurface() reads streamingScreen.getSurface() each call), so it self-reports null
+        // once the SurfaceView's real Surface is torn down — no need to swap it out too. onStop can
+        // fire transiently (e.g. the TV's screensaver occluding the app, not just Home/backgrounding),
+        // and severing the provider here forces every mid-session video pipeline to sit dead until
+        // the service finishes an async rebind, widening the window for a stuck black screen on wake.
         if (isBound) {
             unbindService(serviceConnection)
             isBound = false
@@ -146,6 +165,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             Timber.d("MainActivity destroyed (recreation) — leaving service running")
         }
+        if (mediaSessionLazy.isInitialized()) mediaSessionLazy.value.release()
     }
 
     // ─── View Setup ──────────────────────────────────────────────────────────
@@ -391,7 +411,9 @@ class MainActivity : AppCompatActivity() {
         val photoFrame = currentPhotoFrame
         val nowPlaying = currentNowPlaying
         val pin = currentPin
-        setKeepScreenOn(isOverlayActive(pin, nowPlaying, currentAirPlayState, photoFrame))
+        val overlayActive = isOverlayActive(pin, nowPlaying, currentAirPlayState, photoFrame)
+        setKeepScreenOn(overlayActive)
+        setMediaSessionPlaying(overlayActive)
         when {
             // PIN pairing (access control) happens before streaming — show the code over everything.
             pin != null -> showPinScreen(pin)
@@ -417,6 +439,26 @@ class MainActivity : AppCompatActivity() {
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
+    }
+
+    /**
+     * Reports an active/playing [MediaSession] state while an overlay is on screen. This is a
+     * second, independent signal against the screensaver alongside [setKeepScreenOn] — on a real
+     * device, FLAG_KEEP_SCREEN_ON alone did not stop the TV's screensaver from starting mid-mirror,
+     * so this covers OEM dream implementations that additionally check for active media playback.
+     */
+    private fun setMediaSessionPlaying(playing: Boolean) {
+        val session = mediaSessionLazy.value
+        session.isActive = playing
+        session.setPlaybackState(
+            PlaybackState.Builder()
+                .setState(
+                    if (playing) PlaybackState.STATE_PLAYING else PlaybackState.STATE_STOPPED,
+                    PlaybackState.PLAYBACK_POSITION_UNKNOWN,
+                    1f
+                )
+                .build()
+        )
     }
 
     /** Shows the AirPlay pairing PIN over the full screen during SRP pair-setup. */
